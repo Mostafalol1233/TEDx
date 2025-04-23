@@ -220,37 +220,40 @@ export default function AuthPage() {
         </div>
         
         {/* Right side - Hero */}
-        <div className="w-full max-w-md p-6 hero-gradient text-white rounded-lg">
-          <h2 className="text-3xl font-bold mb-4">مرحباً بك في TickTee</h2>
+        <div className="w-full max-w-md p-6 bg-red-600 text-white rounded-lg">
+          <h2 className="text-3xl font-bold mb-4">TEDx Youth Red Sea STEM</h2>
           <p className="mb-6">
-            منصة رقمية لشراء تذاكر الفعاليات وتيشيرتات حصرية باستخدام نظام النقاط.
+            منصة رسمية لفعالية TEDx Youth Red Sea STEM لشراء التذاكر والمنتجات الحصرية باستخدام نظام النقاط.
           </p>
           <ul className="space-y-3">
             <li className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
               </svg>
-              <span>تذاكر لأحدث الفعاليات</span>
+              <span>تذاكر حصرية للفعالية</span>
             </li>
             <li className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
               </svg>
-              <span>تيشيرتات حصرية بتصاميم مميزة</span>
+              <span>تيشيرتات بشعار TEDx الرسمي</span>
             </li>
             <li className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
               </svg>
-              <span>نظام نقاط سهل للشراء</span>
+              <span>ورش عمل إبداعية متخصصة</span>
             </li>
             <li className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
               </svg>
-              <span>توصيل سريع وآمن</span>
+              <span>مشاركة نخبة من المتحدثين الملهمين</span>
             </li>
           </ul>
+          <div className="mt-8 text-xs">
+            <p>15-16 ديسمبر 2023 | مدرسة ريد سي ستيم، القاهرة</p>
+          </div>
         </div>
       </div>
     </div>
