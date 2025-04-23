@@ -1,7 +1,4 @@
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import NotFound from "@/pages/not-found";
@@ -11,11 +8,11 @@ import UserDashboard from "@/pages/user-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import ProductDetail from "@/pages/product-detail";
 import { ProtectedRoute } from "./lib/protected-route";
-import { useAuth } from "./hooks/use-auth";
+import { AuthProvider, useAuth } from "./hooks/use-auth";
 import Header from "./components/layout/header";
 import Footer from "./components/layout/footer";
 
-function Router() {
+function AppRoutes() {
   const { user } = useAuth();
   
   return (
@@ -44,14 +41,13 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light">
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="light">
+      <TooltipProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   );
 }
 
