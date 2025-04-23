@@ -65,7 +65,7 @@ async function seedDatabase() {
     const workshopTicket: InsertProduct = {
       name: "TEDx Innovation Workshop",
       description: "A hands-on workshop focused on developing creative problem-solving skills. Limited spots available.",
-      imageUrl: "/assets/workshop.jpg",
+      imageUrl: "https://via.placeholder.com/800x400/FF0000/FFFFFF?text=TEDx+Innovation+Workshop",
       category: "Workshop",
       price: 750,
       stock: 30,
