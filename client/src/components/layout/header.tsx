@@ -41,14 +41,11 @@ export default function Header() {
               <Link
                 key={item.name}
                 href={item.href}
+                className={`text-gray-800 hover:text-primary transition ${
+                  location === item.href ? "text-primary font-medium" : ""
+                }`}
               >
-                <a
-                  className={`text-gray-800 hover:text-primary transition ${
-                    location === item.href ? "text-primary font-medium" : ""
-                  }`}
-                >
-                  {item.name}
-                </a>
+                {item.name}
               </Link>
             ))}
           </nav>
@@ -72,11 +69,11 @@ export default function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard"><a className="w-full">الصفحة الشخصية</a></Link>
+                    <Link href="/dashboard" className="w-full">الصفحة الشخصية</Link>
                   </DropdownMenuItem>
                   {user.isAdmin && (
                     <DropdownMenuItem asChild>
-                      <Link href="/admin"><a className="w-full">لوحة الإدارة</a></Link>
+                      <Link href="/admin" className="w-full">لوحة الإدارة</Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem 
@@ -111,14 +108,11 @@ export default function Header() {
                   key={item.name}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
+                  className={`text-gray-800 hover:text-primary transition ${
+                    location === item.href ? "text-primary font-medium" : ""
+                  }`}
                 >
-                  <a
-                    className={`text-gray-800 hover:text-primary transition ${
-                      location === item.href ? "text-primary font-medium" : ""
-                    }`}
-                  >
-                    {item.name}
-                  </a>
+                  {item.name}
                 </Link>
               ))}
               {user && (
