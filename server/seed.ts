@@ -1,0 +1,72 @@
+import { storage } from "./storage";
+import { InsertProduct } from "@shared/schema";
+
+// Seed initial data into the database
+async function seedDatabase() {
+  try {
+    console.log("Seeding database...");
+
+    // Create admin user
+    await storage.createUser({
+      username: "admin",
+      password: "admin123", // This would be hashed in auth.ts
+      name: "Administrator",
+      email: "admin@redseastem.com",
+    });
+    console.log("Admin user created");
+
+    // Create TEDx event tickets
+    const tedxTicket: InsertProduct = {
+      name: "TEDx Youth Red Sea STEM Ticket",
+      description: "Join us for an inspiring day of talks, workshops, and networking at TEDx Youth Red Sea STEM. Experience innovative ideas and breakthrough technologies.",
+      imageUrl: "/assets/tedx-banner.jpg",
+      category: "Event",
+      price: 1500,
+      stock: 150,
+      unlimited: false,
+      type: "ticket",
+      eventDate: new Date("2023-12-15T09:00:00"),
+      eventLocation: "Red Sea STEM School, Cairo"
+    };
+    await storage.createProduct(tedxTicket);
+    console.log("TEDx ticket created");
+
+    // Create TEDx t-shirts
+    const tedxShirt: InsertProduct = {
+      name: "TEDx Youth Red Sea STEM T-Shirt",
+      description: "Official TEDx Youth Red Sea STEM event t-shirt. Made from premium cotton with the event logo.",
+      imageUrl: "/assets/tedx-tshirt.jpg",
+      category: "Merchandise",
+      price: 800,
+      stock: 100,
+      unlimited: false,
+      type: "tshirt",
+      sizes: "S,M,L,XL"
+    };
+    await storage.createProduct(tedxShirt);
+    console.log("TEDx t-shirt created");
+
+    // Create workshop tickets
+    const workshopTicket: InsertProduct = {
+      name: "TEDx Innovation Workshop",
+      description: "A hands-on workshop focused on developing creative problem-solving skills. Limited spots available.",
+      imageUrl: "/assets/workshop.jpg",
+      category: "Workshop",
+      price: 750,
+      stock: 30,
+      unlimited: false,
+      type: "ticket",
+      eventDate: new Date("2023-12-16T13:00:00"),
+      eventLocation: "Innovation Lab, Red Sea STEM School"
+    };
+    await storage.createProduct(workshopTicket);
+    console.log("Workshop ticket created");
+
+    console.log("Database seeding complete!");
+  } catch (error) {
+    console.error("Error seeding database:", error);
+  }
+}
+
+// Run the seed function
+seedDatabase();

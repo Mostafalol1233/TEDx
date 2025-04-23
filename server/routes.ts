@@ -39,7 +39,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(products);
     } catch (err) {
       console.error("Error fetching products:", err);
-      res.status(500).json({ message: "Failed to fetch products", error: err.message });
+      res.status(500).json({ message: "Failed to fetch products", error: err instanceof Error ? err.message : String(err) });
     }
   });
 

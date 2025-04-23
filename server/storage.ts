@@ -53,7 +53,7 @@ export class MemStorage implements IStorage {
   private orders: Map<number, Order>;
   private orderItems: Map<number, OrderItem>;
   
-  public sessionStore: session.SessionStore;
+  public sessionStore: session.Store;
   
   private userIdCounter: number;
   private productIdCounter: number;
