@@ -7,6 +7,8 @@ import AuthPage from "@/pages/auth-page";
 import UserDashboard from "@/pages/user-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import ProductDetail from "@/pages/product-detail";
+import EventsPage from "@/pages/events-page";
+import TshirtsPage from "@/pages/tshirts-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
 import Header from "./components/layout/header";
@@ -22,6 +24,8 @@ function AppRoutes() {
         <Switch>
           <Route path="/" component={HomePage} />
           <Route path="/auth" component={AuthPage} />
+          <Route path="/events" component={EventsPage} />
+          <Route path="/tshirts" component={TshirtsPage} />
           <Route path="/product/:id">
             {params => <ProductDetail id={parseInt(params.id)} />}
           </Route>
