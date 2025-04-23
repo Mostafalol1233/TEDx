@@ -41,15 +41,13 @@ export default function HomePage() {
                 منصة رسمية لشراء تذاكر فعالية TEDx Youth Red Sea STEM والمنتجات الحصرية باستخدام نظام النقاط
               </p>
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 sm:space-x-reverse">
-                <Link href="/#tickets">
-                  <a className="bg-white text-red-600 font-bold px-6 py-3 rounded-lg text-center hover:bg-gray-100 transition">
-                    تصفح التذاكر
-                  </a>
+                <Link href="/events"
+                  className="bg-white text-red-600 font-bold px-6 py-3 rounded-lg text-center hover:bg-gray-100 transition">
+                  تصفح التذاكر
                 </Link>
-                <Link href="#tshirts">
-                  <a className="border border-white text-white font-bold px-6 py-3 rounded-lg text-center hover:bg-white/10 transition">
-                    تصفح التيشيرتات
-                  </a>
+                <Link href="/tshirts"
+                  className="border border-white text-white font-bold px-6 py-3 rounded-lg text-center hover:bg-white/10 transition">
+                  تصفح التيشيرتات
                 </Link>
               </div>
               <div className="mt-6 text-sm text-gray-200">
@@ -59,7 +57,7 @@ export default function HomePage() {
             <div className="order-1 md:order-2">
               <div className="bg-white p-1 rounded-lg shadow-lg">
                 <img 
-                  src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                  src="https://i.imgur.com/FXRzQYG.jpg" 
                   alt="TEDx Youth Red Sea STEM" 
                   className="rounded-lg w-full" 
                 />
@@ -81,8 +79,8 @@ export default function HomePage() {
       <section id="tickets" className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">أحدث الفعاليات</h2>
-          <Link href="/events">
-            <a className="text-primary hover:underline font-medium">عرض الكل</a>
+          <Link href="/events" className="text-primary hover:underline font-medium">
+            عرض الكل
           </Link>
         </div>
 
@@ -117,8 +115,8 @@ export default function HomePage() {
       <section id="tshirts" className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">تيشيرتات مميزة</h2>
-          <Link href="/tshirts">
-            <a className="text-primary hover:underline font-medium">عرض الكل</a>
+          <Link href="/tshirts" className="text-primary hover:underline font-medium">
+            عرض الكل
           </Link>
         </div>
 

@@ -326,7 +326,7 @@ export default function ProductDetail({ id }: ProductDetailProps) {
                 
                 {!user && (
                   <p className="text-center mt-2 text-sm text-gray-500">
-                    يرجى <a href="/auth" className="text-primary hover:underline">تسجيل الدخول</a> لإتمام عملية الشراء
+                    يرجى <Link href="/auth" className="text-primary hover:underline">تسجيل الدخول</Link> لإتمام عملية الشراء
                   </p>
                 )}
                 

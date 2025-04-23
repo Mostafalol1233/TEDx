@@ -58,11 +58,15 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.unlimited ? "متوفر دائماً" : (product.stock ? `${product.stock} متبقي` : "نفذت الكمية")}
             </span>
           </div>
-          <Link href={`/product/${product.id}`}>
-            <Button size="sm" className={`${product.name.includes("TEDx") ? "bg-red-600 hover:bg-red-700" : ""}`}>
+          <Button 
+            size="sm" 
+            className={`${product.name.includes("TEDx") ? "bg-red-600 hover:bg-red-700" : ""}`}
+            asChild
+          >
+            <Link href={`/product/${product.id}`}>
               {isTicket ? "شراء التذكرة" : "إضافة للسلة"}
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </CardContent>
     </Card>
