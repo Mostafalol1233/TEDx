@@ -24,9 +24,14 @@ export default function Header() {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <div className="flex items-center space-x-2 space-x-reverse">
-            <TicketIcon className="text-primary h-6 w-6" />
+            <div className="bg-red-600 text-white px-1 rounded">
+              <span className="text-lg font-bold tracking-tighter">TEDx</span>
+            </div>
             <Link href="/">
-              <h1 className="text-2xl font-bold text-primary cursor-pointer">TickTee</h1>
+              <h1 className="text-xl font-bold cursor-pointer">
+                <span className="text-red-600">Youth</span> 
+                <span className="text-gray-800"> Red Sea STEM</span>
+              </h1>
             </Link>
           </div>
           

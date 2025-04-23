@@ -220,7 +220,7 @@ export default function AuthPage() {
         </div>
         
         {/* Right side - Hero */}
-        <div className="w-full max-w-md p-6 bg-red-600 text-white rounded-lg">
+        <div className="w-full max-w-md p-6 tedx-gradient text-white rounded-lg">
           <h2 className="text-3xl font-bold mb-4">TEDx Youth Red Sea STEM</h2>
           <p className="mb-6">
             منصة رسمية لفعالية TEDx Youth Red Sea STEM لشراء التذاكر والمنتجات الحصرية باستخدام نظام النقاط.
