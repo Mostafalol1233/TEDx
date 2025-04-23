@@ -15,13 +15,18 @@ export default function ProductCard({ product }: ProductCardProps) {
   const sizes = !isTicket && product.sizes ? product.sizes.split(",") : [];
   
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition group">
+    <Card className="overflow-hidden hover:shadow-lg transition group border-t-4 border-t-red-600">
       <div className="relative">
         <img 
           src={product.imageUrl || "https://via.placeholder.com/800x400"} 
           alt={product.name} 
           className={`w-full ${isTicket ? 'h-48' : 'h-64'} object-cover`} 
         />
+        {product.name.includes("TEDx") && (
+          <div className="absolute top-2 left-2 bg-red-600 px-2 py-1 rounded text-white text-xs font-bold">
+            TEDx
+          </div>
+        )}
         <div className="absolute top-2 right-2">
           <Badge variant={isTicket ? "default" : "secondary"}>
             {isTicket ? product.category : "تيشيرت"}
@@ -47,9 +52,14 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
         
         <div className="flex justify-between items-center">
-          <span className="text-primary font-bold">{product.price} نقطة</span>
+          <div className="flex flex-col">
+            <span className="text-primary font-bold text-lg">{product.price} نقطة</span>
+            <span className="text-gray-500 text-xs">
+              {product.unlimited ? "متوفر دائماً" : (product.stock ? `${product.stock} متبقي` : "نفذت الكمية")}
+            </span>
+          </div>
           <Link href={`/product/${product.id}`}>
-            <Button size="sm">
+            <Button size="sm" className={`${product.name.includes("TEDx") ? "bg-red-600 hover:bg-red-700" : ""}`}>
               {isTicket ? "شراء التذكرة" : "إضافة للسلة"}
             </Button>
           </Link>

@@ -131,8 +131,9 @@ export default function ProductDetail({ id }: ProductDetailProps) {
   }
 
   // Demo images for the product (in a real app these would come from the product)
+  const defaultImage = "https://via.placeholder.com/800x400";
   const productImages = [
-    product.imageUrl,
+    product.imageUrl || defaultImage,
     "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
     "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
     "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
@@ -147,7 +148,7 @@ export default function ProductDetail({ id }: ProductDetailProps) {
             <div className="p-6">
               <div className="mb-4">
                 <img 
-                  src={productImages[selectedImage]} 
+                  src={productImages[selectedImage] || "https://via.placeholder.com/800x400"} 
                   alt={product.name} 
                   className="w-full h-80 object-cover rounded-lg" 
                 />
@@ -156,7 +157,7 @@ export default function ProductDetail({ id }: ProductDetailProps) {
                 {productImages.map((image, index) => (
                   <img 
                     key={index}
-                    src={image} 
+                    src={image || "https://via.placeholder.com/200x200"} 
                     alt={`صورة مصغرة ${index + 1}`} 
                     className={`w-full h-20 object-cover rounded-lg cursor-pointer ${selectedImage === index ? 'border-2 border-primary' : ''}`}
                     onClick={() => setSelectedImage(index)}
@@ -196,21 +197,78 @@ export default function ProductDetail({ id }: ProductDetailProps) {
               </p>
 
               {product.type === "ticket" && (
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <div className={`${product.name.includes("TEDx") ? "bg-red-50" : "bg-gray-50"} p-4 rounded-lg mb-6`}>
                   <h3 className="font-bold mb-2">تفاصيل التذكرة:</h3>
                   <ul className="space-y-2 text-sm">
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 ml-2" />
-                      <span>دخول VIP مع مقاعد مميزة</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 ml-2" />
-                      <span>مشروبات ترحيبية مجانية</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle className="h-4 w-4 text-green-500 ml-2" />
-                      <span>ميت آند جريت مع الفنان بعد الحفل</span>
-                    </li>
+                    {product.name.includes("TEDx") && product.name.includes("VIP") ? (
+                      <>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-red-500 ml-2" />
+                          <span>دخول VIP مع مقاعد مميزة في مقدمة القاعة</span>
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-red-500 ml-2" />
+                          <span>حزمة هدايا TEDx حصرية مع تيشيرت المؤتمر</span>
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-red-500 ml-2" />
+                          <span>لقاء خاص مع المتحدثين بعد المؤتمر</span>
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-red-500 ml-2" />
+                          <span>بوفيه غداء فاخر وضيافة كاملة طوال اليوم</span>
+                        </li>
+                      </>
+                    ) : product.name.includes("TEDx") ? (
+                      <>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-red-500 ml-2" />
+                          <span>حضور كامل فعاليات مؤتمر TEDx للشباب</span>
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-red-500 ml-2" />
+                          <span>حقيبة TEDx تذكارية</span>
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-red-500 ml-2" />
+                          <span>ضيافة خفيفة خلال فترات الاستراحة</span>
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-red-500 ml-2" />
+                          <span>شهادة حضور مؤتمر TEDx Youth Red Sea STEM</span>
+                        </li>
+                      </>
+                    ) : product.name.includes("ورشة") || product.name.includes("Workshop") ? (
+                      <>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-green-500 ml-2" />
+                          <span>حضور الورشة التدريبية مع مدربين محترفين</span>
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-green-500 ml-2" />
+                          <span>مواد تدريبية وأدوات للورشة</span>
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-green-500 ml-2" />
+                          <span>شهادة مشاركة في الورشة</span>
+                        </li>
+                      </>
+                    ) : (
+                      <>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-green-500 ml-2" />
+                          <span>دخول VIP مع مقاعد مميزة</span>
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-green-500 ml-2" />
+                          <span>مشروبات ترحيبية مجانية</span>
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-green-500 ml-2" />
+                          <span>ميت آند جريت مع الفنان بعد الحفل</span>
+                        </li>
+                      </>
+                    )}
                   </ul>
                 </div>
               )}
@@ -248,11 +306,11 @@ export default function ProductDetail({ id }: ProductDetailProps) {
 
               <div className="mt-auto">
                 <Button 
-                  className="w-full" 
+                  className={`w-full ${product.name.includes("TEDx") ? "bg-red-600 hover:bg-red-700" : ""}`}
                   disabled={
                     purchaseMutation.isPending || 
                     (product.type === "tshirt" && !selectedSize) ||
-                    (!product.unlimited && product.stock <= 0) ||
+                    (!product.unlimited && (!product.stock || product.stock <= 0)) ||
                     ((user?.points || 0) < product.price)
                   }
                   onClick={() => purchaseMutation.mutate()}
