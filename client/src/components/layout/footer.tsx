@@ -33,9 +33,8 @@ export default function Footer() {
             <h3 className="font-bold text-lg mb-4">روابط سريعة</h3>
             <ul className="space-y-2">
               <li><Link href="/" className="text-gray-400 hover:text-red-500 transition">الرئيسية</Link></li>
-              <li><Link href="/#tickets" className="text-gray-400 hover:text-red-500 transition">التذاكر</Link></li>
-              <li><Link href="/#tshirts" className="text-gray-400 hover:text-red-500 transition">التيشيرتات</Link></li>
-              <li><Link href="/about" className="text-gray-400 hover:text-red-500 transition">حول TEDx</Link></li>
+              <li><Link href="/events" className="text-gray-400 hover:text-red-500 transition">التذاكر</Link></li>
+              <li><Link href="/tshirts" className="text-gray-400 hover:text-red-500 transition">التيشيرتات</Link></li>
               <li><Link href="/auth" className="text-gray-400 hover:text-red-500 transition">تسجيل الدخول</Link></li>
             </ul>
           </div>

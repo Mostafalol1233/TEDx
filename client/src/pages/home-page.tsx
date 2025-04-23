@@ -76,7 +76,7 @@ export default function HomePage() {
       </div>
 
       {/* Featured Events Section */}
-      <section id="tickets" className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">أحدث الفعاليات</h2>
           <Link href="/events" className="text-primary hover:underline font-medium">
@@ -112,7 +112,7 @@ export default function HomePage() {
       </section>
 
       {/* T-shirts Section */}
-      <section id="tshirts" className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">تيشيرتات مميزة</h2>
           <Link href="/tshirts" className="text-primary hover:underline font-medium">

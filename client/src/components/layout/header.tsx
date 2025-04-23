@@ -15,7 +15,6 @@ export default function Header() {
     { name: "الرئيسية", href: "/" },
     { name: "التذاكر", href: "/events" },
     { name: "التيشيرتات", href: "/tshirts" },
-    { name: "حول المنصة", href: "/about" },
   ];
 
   return (
