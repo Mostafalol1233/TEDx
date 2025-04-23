@@ -35,12 +35,12 @@ export default function Header() {
           </div>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6 space-x-reverse">
+          <nav className="hidden md:flex items-center">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`text-gray-800 hover:text-primary transition ${
+                className={`text-gray-800 hover:text-primary transition mx-4 ${
                   location === item.href ? "text-primary font-medium" : ""
                 }`}
               >

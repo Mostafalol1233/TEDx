@@ -85,9 +85,72 @@ export const insertOrderItemSchema = createInsertSchema(orderItems).pick({
   pricePerItem: true,
 });
 
+// Message schema for user-admin communication
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  fromUserId: integer("from_user_id").notNull(),
+  toUserId: integer("to_user_id").notNull(),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMessageSchema = createInsertSchema(messages).pick({
+  fromUserId: true,
+  toUserId: true,
+  content: true,
+});
+
+// Point Transfer schema for admin to user point transfers
+export const pointTransfers = pgTable("point_transfers", {
+  id: serial("id").primaryKey(),
+  fromUserId: integer("from_user_id").notNull(),
+  toUserId: integer("to_user_id").notNull(),
+  points: integer("points").notNull(),
+  reason: text("reason"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPointTransferSchema = createInsertSchema(pointTransfers).pick({
+  fromUserId: true,
+  toUserId: true,
+  points: true, 
+  reason: true,
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
+  sentMessages: many(messages, { relationName: "fromUser" }),
+  receivedMessages: many(messages, { relationName: "toUser" }),
+  sentPointTransfers: many(pointTransfers, { relationName: "fromUser" }),
+  receivedPointTransfers: many(pointTransfers, { relationName: "toUser" }),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  fromUser: one(users, {
+    fields: [messages.fromUserId],
+    references: [users.id],
+    relationName: "fromUser",
+  }),
+  toUser: one(users, {
+    fields: [messages.toUserId],
+    references: [users.id],
+    relationName: "toUser",
+  }),
+}));
+
+export const pointTransfersRelations = relations(pointTransfers, ({ one }) => ({
+  fromUser: one(users, {
+    fields: [pointTransfers.fromUserId],
+    references: [users.id],
+    relationName: "fromUser",
+  }),
+  toUser: one(users, {
+    fields: [pointTransfers.toUserId],
+    references: [users.id],
+    relationName: "toUser",
+  }),
 }));
 
 export const productsRelations = relations(products, ({ many }) => ({
@@ -125,3 +188,9 @@ export type InsertOrder = z.infer<typeof insertOrderSchema>;
 
 export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
+export type PointTransfer = typeof pointTransfers.$inferSelect;
+export type InsertPointTransfer = z.infer<typeof insertPointTransferSchema>;

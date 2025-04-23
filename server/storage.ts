@@ -7,6 +7,10 @@ import {
   InsertOrder, 
   OrderItem, 
   InsertOrderItem,
+  Message,
+  InsertMessage,
+  PointTransfer,
+  InsertPointTransfer,
   users 
 } from "@shared/schema";
 import createMemoryStore from "memorystore";
@@ -43,6 +47,18 @@ export interface IStorage {
   getOrderItems(orderId: number): Promise<OrderItem[]>;
   createOrderItem(orderItem: InsertOrderItem): Promise<OrderItem>;
   
+  // Message operations
+  getMessage(id: number): Promise<Message | undefined>;
+  getUserMessages(userId: number): Promise<Message[]>;
+  getConversation(user1Id: number, user2Id: number): Promise<Message[]>;
+  createMessage(message: InsertMessage): Promise<Message>;
+  markMessageAsRead(id: number): Promise<void>;
+  
+  // Point transfer operations
+  getPointTransfer(id: number): Promise<PointTransfer | undefined>;
+  getUserPointTransfers(userId: number): Promise<PointTransfer[]>;
+  createPointTransfer(pointTransfer: InsertPointTransfer): Promise<PointTransfer>;
+  
   // Session store
   sessionStore: session.Store;
 }
@@ -52,6 +68,8 @@ export class MemStorage implements IStorage {
   private products: Map<number, Product>;
   private orders: Map<number, Order>;
   private orderItems: Map<number, OrderItem>;
+  private messages: Map<number, Message>;
+  private pointTransfers: Map<number, PointTransfer>;
   
   public sessionStore: session.Store;
   
@@ -59,17 +77,23 @@ export class MemStorage implements IStorage {
   private productIdCounter: number;
   private orderIdCounter: number;
   private orderItemIdCounter: number;
+  private messageIdCounter: number;
+  private pointTransferIdCounter: number;
 
   constructor() {
     this.users = new Map();
     this.products = new Map();
     this.orders = new Map();
     this.orderItems = new Map();
+    this.messages = new Map();
+    this.pointTransfers = new Map();
     
     this.userIdCounter = 1;
     this.productIdCounter = 1;
     this.orderIdCounter = 1;
     this.orderItemIdCounter = 1;
+    this.messageIdCounter = 1;
+    this.pointTransferIdCounter = 1;
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000, // prune expired entries every 24h
@@ -323,6 +347,87 @@ export class MemStorage implements IStorage {
     };
     this.orderItems.set(id, orderItem);
     return orderItem;
+  }
+
+  // Message operations
+  async getMessage(id: number): Promise<Message | undefined> {
+    return this.messages.get(id);
+  }
+
+  async getUserMessages(userId: number): Promise<Message[]> {
+    return Array.from(this.messages.values()).filter(
+      (message) => message.toUserId === userId || message.fromUserId === userId
+    );
+  }
+
+  async getConversation(user1Id: number, user2Id: number): Promise<Message[]> {
+    return Array.from(this.messages.values()).filter(
+      (message) => 
+        (message.fromUserId === user1Id && message.toUserId === user2Id) ||
+        (message.fromUserId === user2Id && message.toUserId === user1Id)
+    ).sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return a.createdAt.getTime() - b.createdAt.getTime();
+    });
+  }
+
+  async createMessage(insertMessage: InsertMessage): Promise<Message> {
+    const id = this.messageIdCounter++;
+    const message: Message = {
+      ...insertMessage,
+      id,
+      isRead: false,
+      createdAt: new Date()
+    };
+    this.messages.set(id, message);
+    return message;
+  }
+
+  async markMessageAsRead(id: number): Promise<void> {
+    const message = await this.getMessage(id);
+    if (message) {
+      message.isRead = true;
+      this.messages.set(id, message);
+    }
+  }
+
+  // Point transfer operations
+  async getPointTransfer(id: number): Promise<PointTransfer | undefined> {
+    return this.pointTransfers.get(id);
+  }
+
+  async getUserPointTransfers(userId: number): Promise<PointTransfer[]> {
+    return Array.from(this.pointTransfers.values()).filter(
+      (transfer) => transfer.toUserId === userId || transfer.fromUserId === userId
+    );
+  }
+
+  async createPointTransfer(insertPointTransfer: InsertPointTransfer): Promise<PointTransfer> {
+    const id = this.pointTransferIdCounter++;
+    const pointTransfer: PointTransfer = {
+      ...insertPointTransfer,
+      id,
+      createdAt: new Date()
+    };
+    this.pointTransfers.set(id, pointTransfer);
+
+    // Update user points
+    const fromUser = await this.getUser(insertPointTransfer.fromUserId);
+    const toUser = await this.getUser(insertPointTransfer.toUserId);
+
+    if (fromUser && toUser) {
+      // Only deduct points from sender if they are not an admin
+      if (!fromUser.isAdmin) {
+        fromUser.points -= insertPointTransfer.points;
+        this.users.set(fromUser.id, fromUser);
+      }
+
+      // Add points to receiver
+      toUser.points += insertPointTransfer.points;
+      this.users.set(toUser.id, toUser);
+    }
+
+    return pointTransfer;
   }
 }
 
