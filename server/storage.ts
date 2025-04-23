@@ -44,7 +44,7 @@ export interface IStorage {
   createOrderItem(orderItem: InsertOrderItem): Promise<OrderItem>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {

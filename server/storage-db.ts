@@ -16,6 +16,7 @@ import { db, pool } from "./db";
 import { eq } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import session from "express-session";
+import { IStorage } from "./storage";
 
 // Create PostgreSQL session store
 const PostgresSessionStore = connectPg(session);
@@ -128,6 +129,3 @@ export class DatabaseStorage implements IStorage {
     return orderItem;
   }
 }
-
-// Import the IStorage interface type
-import { IStorage } from "./storage";
