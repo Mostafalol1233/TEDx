@@ -66,6 +66,15 @@ export default function PointTransferPage() {
   // Fetch user point transfers
   const { data: pointTransfers, isLoading: transfersLoading } = useQuery<PointTransfer[]>({
     queryKey: ["/api/point-transfers"],
+    staleTime: 30000, // Data stays fresh for 30 seconds
+    select: (data) => {
+      // Pre-sort the data to avoid sorting in render
+      return data?.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+    }
   });
   
   // Send points mutation
@@ -291,11 +300,6 @@ export default function PointTransferPage() {
                 <div className="space-y-6">
                   {pointTransfers
                     .filter(transfer => transfer.fromUserId === user.id || transfer.toUserId === user.id)
-                    .sort((a, b) => {
-                      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-                      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                      return dateB - dateA;
-                    })
                     .map(transfer => {
                       const isReceived = transfer.toUserId === user.id;
                       

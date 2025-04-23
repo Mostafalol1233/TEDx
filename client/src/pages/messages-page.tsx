@@ -37,14 +37,22 @@ export default function MessagesPage() {
   // Fetch user messages
   const { data: messages, isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 10000, // Consider data fresh for 10 seconds
+    select: (data) => data?.sort((a, b) => {
+      // Sort by date descending
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    })
   });
   
   // Fetch conversation with selected user
   const { data: conversation, isLoading: conversationLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages/conversation", selectedUserId],
     enabled: selectedUserId !== null,
-    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchInterval: 10000, // Refresh every 10 seconds
+    staleTime: 5000, // Consider data fresh for 5 seconds
   });
   
   // Send message mutation
