@@ -6,9 +6,13 @@ import {
   Order, 
   OrderItem,
   Product,
+  Message,
+  PointTransfer,
   insertProductSchema, 
   insertOrderSchema,
-  insertOrderItemSchema
+  insertOrderItemSchema,
+  insertMessageSchema,
+  insertPointTransferSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -187,6 +191,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(orderItem);
     } catch (err) {
       res.status(500).json({ message: "Failed to create order item" });
+    }
+  });
+
+  // Messages API
+  app.get("/api/messages", isAuthenticated, async (req, res) => {
+    try {
+      const messages = await storage.getUserMessages(req.user.id);
+      res.json(messages);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  app.get("/api/messages/conversation/:userId", isAuthenticated, async (req, res) => {
+    try {
+      const otherUserId = parseInt(req.params.userId);
+      const conversation = await storage.getConversation(req.user.id, otherUserId);
+      res.json(conversation);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch conversation" });
+    }
+  });
+
+  app.post("/api/messages", isAuthenticated, async (req, res) => {
+    try {
+      const parseResult = insertMessageSchema.safeParse(req.body);
+      
+      if (!parseResult.success) {
+        return res.status(400).json({ message: "Invalid message data" });
+      }
+      
+      const messageData = parseResult.data;
+      
+      // Ensure user can only send messages from themselves
+      if (messageData.fromUserId !== req.user.id) {
+        return res.status(403).json({ message: "Cannot send message as another user" });
+      }
+      
+      // Check if recipient exists
+      const recipient = await storage.getUser(messageData.toUserId);
+      if (!recipient) {
+        return res.status(404).json({ message: "Recipient not found" });
+      }
+      
+      // Create message
+      const message = await storage.createMessage(messageData);
+      
+      res.status(201).json(message);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  app.patch("/api/messages/:id/read", isAuthenticated, async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      const message = await storage.getMessage(messageId);
+      
+      if (!message) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+      
+      // Ensure user can only mark messages addressed to them as read
+      if (message.toUserId !== req.user.id) {
+        return res.status(403).json({ message: "Cannot mark this message as read" });
+      }
+      
+      await storage.markMessageAsRead(messageId);
+      
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to mark message as read" });
+    }
+  });
+
+  // Point Transfer API
+  app.get("/api/point-transfers", isAuthenticated, async (req, res) => {
+    try {
+      const transfers = await storage.getUserPointTransfers(req.user.id);
+      res.json(transfers);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch point transfers" });
+    }
+  });
+
+  app.post("/api/point-transfers", isAuthenticated, async (req, res) => {
+    try {
+      const parseResult = insertPointTransferSchema.safeParse(req.body);
+      
+      if (!parseResult.success) {
+        return res.status(400).json({ message: "Invalid point transfer data" });
+      }
+      
+      const transferData = parseResult.data;
+      
+      // Ensure user can only send points from themselves
+      if (transferData.fromUserId !== req.user.id) {
+        return res.status(403).json({ message: "Cannot send points as another user" });
+      }
+      
+      // Check if recipient exists
+      const recipient = await storage.getUser(transferData.toUserId);
+      if (!recipient) {
+        return res.status(404).json({ message: "Recipient not found" });
+      }
+      
+      // Check if user has enough points (admins are exempt)
+      if (!req.user.isAdmin && req.user.points < transferData.points) {
+        return res.status(400).json({ message: "Insufficient points" });
+      }
+      
+      // Create point transfer
+      const transfer = await storage.createPointTransfer(transferData);
+      
+      res.status(201).json(transfer);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to transfer points" });
+    }
+  });
+
+  // Get admin users for non-admin users to contact
+  app.get("/api/users/admins", isAuthenticated, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const adminUsers = users.filter(user => user.isAdmin);
+      res.json(adminUsers);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch admin users" });
     }
   });
 

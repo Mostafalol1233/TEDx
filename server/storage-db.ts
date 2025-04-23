@@ -7,13 +7,19 @@ import {
   InsertOrder, 
   OrderItem, 
   InsertOrderItem,
+  Message,
+  InsertMessage,
+  PointTransfer,
+  InsertPointTransfer,
   users,
   products,
   orders,
-  orderItems
+  orderItems,
+  messages,
+  pointTransfers
 } from "@shared/schema";
 import { db, pool } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, or, and, desc } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import session from "express-session";
 import { IStorage } from "./storage";
@@ -127,5 +133,99 @@ export class DatabaseStorage implements IStorage {
   async createOrderItem(insertOrderItem: InsertOrderItem): Promise<OrderItem> {
     const [orderItem] = await db.insert(orderItems).values(insertOrderItem).returning();
     return orderItem;
+  }
+
+  // Message operations
+  async getMessage(id: number): Promise<Message | undefined> {
+    const [message] = await db.select().from(messages).where(eq(messages.id, id));
+    return message;
+  }
+
+  async getUserMessages(userId: number): Promise<Message[]> {
+    return db.select().from(messages).where(
+      or(
+        eq(messages.fromUserId, userId),
+        eq(messages.toUserId, userId)
+      )
+    );
+  }
+
+  async getConversation(user1Id: number, user2Id: number): Promise<Message[]> {
+    return db.select().from(messages).where(
+      or(
+        and(
+          eq(messages.fromUserId, user1Id),
+          eq(messages.toUserId, user2Id)
+        ),
+        and(
+          eq(messages.fromUserId, user2Id),
+          eq(messages.toUserId, user1Id)
+        )
+      )
+    ).orderBy(messages.createdAt);
+  }
+
+  async createMessage(insertMessage: InsertMessage): Promise<Message> {
+    const [message] = await db.insert(messages).values({
+      ...insertMessage,
+      isRead: false,
+      createdAt: new Date()
+    }).returning();
+    return message;
+  }
+
+  async markMessageAsRead(id: number): Promise<void> {
+    await db
+      .update(messages)
+      .set({ isRead: true })
+      .where(eq(messages.id, id));
+  }
+
+  // Point transfer operations
+  async getPointTransfer(id: number): Promise<PointTransfer | undefined> {
+    const [transfer] = await db.select().from(pointTransfers).where(eq(pointTransfers.id, id));
+    return transfer;
+  }
+
+  async getUserPointTransfers(userId: number): Promise<PointTransfer[]> {
+    return db.select().from(pointTransfers).where(
+      or(
+        eq(pointTransfers.fromUserId, userId),
+        eq(pointTransfers.toUserId, userId)
+      )
+    ).orderBy(desc(pointTransfers.createdAt));
+  }
+
+  async createPointTransfer(insertPointTransfer: InsertPointTransfer): Promise<PointTransfer> {
+    // Begin transaction
+    return await db.transaction(async (tx) => {
+      // Create the point transfer record
+      const [transfer] = await tx.insert(pointTransfers).values({
+        ...insertPointTransfer,
+        createdAt: new Date()
+      }).returning();
+      
+      // Get the users
+      const [fromUser] = await tx.select().from(users).where(eq(users.id, insertPointTransfer.fromUserId));
+      const [toUser] = await tx.select().from(users).where(eq(users.id, insertPointTransfer.toUserId));
+      
+      if (!fromUser || !toUser) {
+        throw new Error('User not found');
+      }
+      
+      // Only deduct points from sender if they are not an admin
+      if (!fromUser.isAdmin) {
+        await tx.update(users)
+          .set({ points: fromUser.points - insertPointTransfer.points })
+          .where(eq(users.id, fromUser.id));
+      }
+      
+      // Add points to receiver
+      await tx.update(users)
+        .set({ points: toUser.points + insertPointTransfer.points })
+        .where(eq(users.id, toUser.id));
+      
+      return transfer;
+    });
   }
 }

@@ -75,6 +75,12 @@ export default function Header() {
                       <Link href="/admin" className="w-full">لوحة الإدارة</Link>
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem asChild>
+                    <Link href="/messages" className="w-full">الرسائل</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/points" className="w-full">تحويل النقاط</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => logoutMutation.mutate()}
                     disabled={logoutMutation.isPending}
