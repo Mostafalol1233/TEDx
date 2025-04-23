@@ -17,7 +17,10 @@ export default function EventsPage() {
   const tickets = products?.filter(p => p.type === "ticket") || [];
   
   // Get unique categories
-  const categories = ["all", ...new Set(tickets.map(ticket => ticket.category))];
+  const uniqueCategories = tickets
+    .map(ticket => ticket.category)
+    .filter((cat, index, self) => cat && self.indexOf(cat) === index);
+  const categories = ["all", ...uniqueCategories];
   
   // Filter tickets by category if not "all"
   const filteredTickets = tickets.filter(ticket => 

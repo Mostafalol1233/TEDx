@@ -17,7 +17,10 @@ export default function TshirtsPage() {
   const tshirts = products?.filter(p => p.type === "tshirt") || [];
   
   // Get unique categories
-  const categories = ["all", ...new Set(tshirts.map(tshirt => tshirt.category))];
+  const uniqueCategories = tshirts
+    .map(tshirt => tshirt.category)
+    .filter((cat, index, self) => cat && self.indexOf(cat) === index);
+  const categories = ["all", ...uniqueCategories];
   
   // Filter t-shirts by category if not "all"
   const filteredTshirts = tshirts.filter(tshirt => 
