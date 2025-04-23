@@ -26,19 +26,23 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <div className="hero-gradient text-white">
+      <div className="tedx-gradient text-white">
         <div className="container mx-auto px-4 py-12 md:py-20">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="order-2 md:order-1">
+              <div className="mb-2">
+                <span className="bg-white text-red-600 px-2 py-1 rounded font-bold">TEDx</span>
+                <span className="text-xl font-bold ml-2">Youth Red Sea STEM</span>
+              </div>
               <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-4">
                 احصل على تذاكر الفعاليات وتيشيرتات حصرية
               </h2>
-              <p className="text-lg mb-8 text-blue-100">
-                منصة رقمية تتيح لك شراء تذاكر الفعاليات وتيشيرتات خاصة بكل سهولة باستخدام نظام النقاط
+              <p className="text-lg mb-8 text-gray-100">
+                منصة رسمية لشراء تذاكر فعالية TEDx Youth Red Sea STEM والمنتجات الحصرية باستخدام نظام النقاط
               </p>
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 sm:space-x-reverse">
                 <Link href="/#tickets">
-                  <a className="bg-white text-blue-600 font-bold px-6 py-3 rounded-lg text-center hover:bg-blue-50 transition">
+                  <a className="bg-white text-red-600 font-bold px-6 py-3 rounded-lg text-center hover:bg-gray-100 transition">
                     تصفح التذاكر
                   </a>
                 </Link>
@@ -48,13 +52,18 @@ export default function HomePage() {
                   </a>
                 </Link>
               </div>
+              <div className="mt-6 text-sm text-gray-200">
+                <p>الحدث: 15-16 ديسمبر 2023 | مدرسة ريد سي ستيم، القاهرة</p>
+              </div>
             </div>
             <div className="order-1 md:order-2">
-              <img 
-                src="https://images.unsplash.com/photo-1582056615228-5bd33afb452f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
-                alt="تذاكر فعاليات" 
-                className="rounded-lg shadow-lg w-full" 
-              />
+              <div className="bg-white p-1 rounded-lg shadow-lg">
+                <img 
+                  src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                  alt="TEDx Youth Red Sea STEM" 
+                  className="rounded-lg w-full" 
+                />
+              </div>
             </div>
           </div>
         </div>

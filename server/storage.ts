@@ -76,16 +76,17 @@ export class MemStorage implements IStorage {
     });
     
     // Create admin user by default
-    this.createUser({
+    const adminUser: User = {
+      id: this.userIdCounter++,
       username: "admin",
       password: "admin123", // This would be hashed in the auth.ts
       name: "Administrator",
       email: "admin@ticktee.com",
       points: 10000,
       isAdmin: true
-    }).then(() => {
-      console.log("Admin user created");
-    });
+    };
+    this.users.set(adminUser.id, adminUser);
+    console.log("Admin user created");
     
     // Create some initial products
     this.addInitialProducts();
@@ -209,10 +210,13 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
     const user: User = { 
-      ...insertUser, 
       id,
-      points: insertUser.points || 0,
-      isAdmin: !!insertUser.isAdmin
+      username: insertUser.username,
+      password: insertUser.password,
+      name: insertUser.name || null,
+      email: insertUser.email || null,
+      points: 0, // Default points
+      isAdmin: false // Default isAdmin status
     };
     this.users.set(id, user);
     return user;

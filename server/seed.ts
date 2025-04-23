@@ -45,6 +45,21 @@ async function seedDatabase() {
     };
     await storage.createProduct(tedxShirt);
     console.log("TEDx t-shirt created");
+    
+    // Create TEDx classic red t-shirts
+    const tedxRedShirt: InsertProduct = {
+      name: "TEDx Classic Red T-Shirt",
+      description: "Classic TEDx red t-shirt with the iconic TEDx logo. A must-have for TEDx enthusiasts.",
+      imageUrl: "/assets/tedx-red-tshirt.jpg",
+      category: "Classic",
+      price: 950,
+      stock: 75,
+      unlimited: false,
+      type: "tshirt",
+      sizes: "S,M,L,XL,XXL"
+    };
+    await storage.createProduct(tedxRedShirt);
+    console.log("TEDx red t-shirt created");
 
     // Create workshop tickets
     const workshopTicket: InsertProduct = {
@@ -61,6 +76,22 @@ async function seedDatabase() {
     };
     await storage.createProduct(workshopTicket);
     console.log("Workshop ticket created");
+    
+    // Create VIP ticket
+    const vipTicket: InsertProduct = {
+      name: "TEDx Youth Red Sea STEM VIP Ticket",
+      description: "VIP access to all TEDx Youth Red Sea STEM event activities, including exclusive networking sessions with speakers, premium seating, and a special gift bag.",
+      imageUrl: "/assets/tedx-vip.jpg",
+      category: "VIP",
+      price: 3000,
+      stock: 20,
+      unlimited: false,
+      type: "ticket",
+      eventDate: new Date("2023-12-15T09:00:00"),
+      eventLocation: "Red Sea STEM School, Cairo"
+    };
+    await storage.createProduct(vipTicket);
+    console.log("VIP ticket created");
 
     console.log("Database seeding complete!");
   } catch (error) {
