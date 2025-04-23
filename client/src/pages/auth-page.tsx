@@ -108,9 +108,9 @@ export default function AuthPage() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="login-password">كلمة المرور</Label>
-                        <a href="#" className="text-sm text-primary hover:underline">
+                        <button type="button" className="text-sm text-primary hover:underline">
                           نسيت كلمة المرور؟
-                        </a>
+                        </button>
                       </div>
                       <Input 
                         id="login-password" 
