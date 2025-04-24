@@ -70,6 +70,7 @@ export default function AdminProductsPage() {
   // Fetch products
   const { data: products = [], isLoading, isError } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    refetchOnWindowFocus: false,
   });
 
   // Delete product mutation

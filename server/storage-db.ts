@@ -98,11 +98,16 @@ export class DatabaseStorage implements IStorage {
   }
   
   async deleteProduct(id: number): Promise<boolean> {
-    const result = await db
-      .delete(products)
-      .where(eq(products.id, id));
-    
-    return result.rowCount > 0;
+    try {
+      await db
+        .delete(products)
+        .where(eq(products.id, id));
+      
+      return true;
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      return false;
+    }
   }
   
   async updateProductStock(id: number, stock: number): Promise<void> {
