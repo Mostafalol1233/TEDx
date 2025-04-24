@@ -137,9 +137,9 @@ export default function ProductDetail({ id }: ProductDetailProps) {
     if (product.name.includes("TEDx")) {
       productImages = [
         product.imageUrl || "https://via.placeholder.com/800x400",
+        "https://i.imgur.com/6QJjYQ6.jpg",
         "https://i.imgur.com/CiKvA72.jpg",
-        "https://i.imgur.com/u4aVQm3.jpg",
-        "https://i.imgur.com/FXRzQYG.jpg"
+        "https://i.imgur.com/vnjCsWA.jpg"
       ];
     } else if (product.name.includes("حماقي")) {
       productImages = [

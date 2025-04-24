@@ -74,7 +74,7 @@ export default function HomePage() {
             <div className="order-1 md:order-2">
               <div className="bg-white p-2 rounded-xl shadow-xl transform rotate-1 hover:rotate-0 transition-all duration-300">
                 <img 
-                  src="https://i.imgur.com/FXRzQYG.jpg" 
+                  src="https://i.imgur.com/6QJjYQ6.jpg" 
                   alt="TEDx Youth Red Sea STEM" 
                   className="rounded-lg w-full object-cover h-72 md:h-auto" 
                 />
