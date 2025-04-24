@@ -183,7 +183,7 @@ export default function AdminProductsPage() {
     e.preventDefault();
     const productData = {
       ...formData,
-      eventDate: formData.eventDate ? new Date(formData.eventDate).toISOString() : null,
+      eventDate: formData.eventDate ? new Date(formData.eventDate) : null,
     };
     createMutation.mutate(productData as InsertProduct);
   };

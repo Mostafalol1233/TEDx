@@ -11,6 +11,7 @@ import EventsPage from "@/pages/events-page";
 import TshirtsPage from "@/pages/tshirts-page";
 import MessagesPage from "@/pages/messages-page";
 import PointTransferPage from "@/pages/point-transfer-page";
+import AdminProductsPage from "@/pages/admin/products";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
 import Header from "./components/layout/header";
@@ -37,6 +38,26 @@ function AppRoutes() {
           <ProtectedRoute 
             path="/admin" 
             component={AdminDashboard}
+            isAdminRoute={true}
+          />
+          <ProtectedRoute 
+            path="/admin/products" 
+            component={AdminProductsPage}
+            isAdminRoute={true}
+          />
+          <ProtectedRoute 
+            path="/admin/users" 
+            component={() => <div className="p-8 text-center">صفحة إدارة المستخدمين - قيد التطوير</div>}
+            isAdminRoute={true}
+          />
+          <ProtectedRoute 
+            path="/admin/reports" 
+            component={() => <div className="p-8 text-center">صفحة التقارير - قيد التطوير</div>}
+            isAdminRoute={true}
+          />
+          <ProtectedRoute 
+            path="/admin/settings" 
+            component={() => <div className="p-8 text-center">صفحة الإعدادات - قيد التطوير</div>}
             isAdminRoute={true}
           />
           <Route component={NotFound} />

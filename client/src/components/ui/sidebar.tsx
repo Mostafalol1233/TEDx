@@ -9,6 +9,7 @@ import {
   LayoutDashboardIcon,
   MenuIcon,
   XIcon,
+  ShoppingBag,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -86,14 +87,9 @@ export const adminSidebarItems = [
     icon: <LayoutDashboardIcon className="h-5 w-5" />,
   },
   {
-    title: "التذاكر",
-    href: "/admin/tickets",
-    icon: <TicketIcon className="h-5 w-5" />,
-  },
-  {
-    title: "التيشيرتات",
-    href: "/admin/tshirts",
-    icon: <ShirtIcon className="h-5 w-5" />,
+    title: "المنتجات",
+    href: "/admin/products",
+    icon: <ShoppingBag className="h-5 w-5" />,
   },
   {
     title: "المستخدمون",
