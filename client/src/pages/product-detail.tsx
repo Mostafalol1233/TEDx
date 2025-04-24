@@ -130,14 +130,56 @@ export default function ProductDetail({ id }: ProductDetailProps) {
     );
   }
 
-  // Demo images for the product (in a real app these would come from the product)
-  const defaultImage = "https://via.placeholder.com/800x400";
-  const productImages = [
-    product.imageUrl || defaultImage,
-    "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
-    "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
-    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
-  ];
+  // Define product images based on product type
+  let productImages = [product.imageUrl || "https://via.placeholder.com/800x400"];
+  
+  if (product.type === "ticket") {
+    if (product.name.includes("TEDx")) {
+      productImages = [
+        product.imageUrl || "https://via.placeholder.com/800x400",
+        "https://i.imgur.com/CiKvA72.jpg",
+        "https://i.imgur.com/u4aVQm3.jpg",
+        "https://i.imgur.com/FXRzQYG.jpg"
+      ];
+    } else if (product.name.includes("حماقي")) {
+      productImages = [
+        product.imageUrl || "https://via.placeholder.com/800x400",
+        "https://i.imgur.com/K3dzE98.jpg",
+        "https://i.imgur.com/FXRzQYG.jpg",
+        "https://i.imgur.com/u4aVQm3.jpg"
+      ];
+    } else {
+      productImages = [
+        product.imageUrl || "https://via.placeholder.com/800x400",
+        "https://i.imgur.com/FXRzQYG.jpg",
+        "https://i.imgur.com/CiKvA72.jpg",
+        "https://i.imgur.com/u4aVQm3.jpg"
+      ];
+    }
+  } else if (product.type === "tshirt") {
+    if (product.name.includes("Red")) {
+      productImages = [
+        product.imageUrl || "https://via.placeholder.com/800x400",
+        "https://i.imgur.com/6a6ZRXP.jpg",
+        "https://i.imgur.com/8Nx43Pn.jpg",
+        "https://i.imgur.com/1QYt70s.jpg"
+      ];
+    } else if (product.name.includes("Black")) {
+      productImages = [
+        product.imageUrl || "https://via.placeholder.com/800x400",
+        "https://i.imgur.com/1QYt70s.jpg",
+        "https://i.imgur.com/8Nx43Pn.jpg",
+        "https://i.imgur.com/6a6ZRXP.jpg"
+      ];
+    } else {
+      productImages = [
+        product.imageUrl || "https://via.placeholder.com/800x400",
+        "https://i.imgur.com/8Nx43Pn.jpg",
+        "https://i.imgur.com/6a6ZRXP.jpg",
+        "https://i.imgur.com/1QYt70s.jpg"
+      ];
+    }
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
