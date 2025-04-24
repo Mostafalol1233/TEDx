@@ -403,12 +403,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/products", isAdmin, async (req, res) => {
+  // Admin Product API routes
+  app.post("/api/admin/products", isAdmin, async (req, res) => {
     try {
       const parseResult = insertProductSchema.safeParse(req.body);
       
       if (!parseResult.success) {
-        return res.status(400).json({ message: "Invalid product data" });
+        return res.status(400).json({ 
+          message: "Invalid product data", 
+          errors: parseResult.error.errors 
+        });
       }
       
       const productData = parseResult.data;
@@ -418,7 +422,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json(product);
     } catch (err) {
-      res.status(500).json({ message: "Failed to create product" });
+      console.error("Error creating product:", err);
+      res.status(500).json({ 
+        message: "Failed to create product", 
+        error: err instanceof Error ? err.message : String(err) 
+      });
+    }
+  });
+  
+  app.patch("/api/admin/products/:id", isAdmin, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      
+      // Get existing product
+      const existingProduct = await storage.getProduct(productId);
+      if (!existingProduct) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      // Validate update data (partial schema)
+      const productUpdateSchema = z.object({
+        name: z.string().optional(),
+        description: z.string().nullable().optional(),
+        price: z.number().optional(),
+        category: z.string().optional(),
+        imageUrl: z.string().nullable().optional(),
+        stock: z.number().nullable().optional(),
+        unlimited: z.boolean().nullable().optional(),
+        eventDate: z.date().nullable().optional(),
+        eventLocation: z.string().nullable().optional(),
+        sizes: z.string().nullable().optional(),
+      });
+      
+      const parseResult = productUpdateSchema.safeParse(req.body);
+      
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid product update data", 
+          errors: parseResult.error.errors 
+        });
+      }
+      
+      // Update product using the storage method
+      const updatedProduct = await storage.updateProduct(productId, parseResult.data);
+      
+      if (!updatedProduct) {
+        return res.status(404).json({ message: "Failed to update product" });
+      }
+      
+      res.json(updatedProduct);
+    } catch (err) {
+      console.error("Error updating product:", err);
+      res.status(500).json({ 
+        message: "Failed to update product", 
+        error: err instanceof Error ? err.message : String(err) 
+      });
+    }
+  });
+  
+  app.delete("/api/admin/products/:id", isAdmin, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      
+      // Use the deleteProduct method
+      const success = await storage.deleteProduct(productId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Product not found or could not be deleted" });
+      }
+      
+      res.json({ success: true, message: "Product deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      res.status(500).json({ 
+        message: "Failed to delete product", 
+        error: err instanceof Error ? err.message : String(err) 
+      });
     }
   });
 

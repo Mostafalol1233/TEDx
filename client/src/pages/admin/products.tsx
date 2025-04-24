@@ -199,7 +199,7 @@ export default function AdminProductsPage() {
       description: formData.description,
       price: formData.price,
       category: formData.category,
-      eventDate: formData.eventDate ? new Date(formData.eventDate).toISOString() : null,
+      eventDate: formData.eventDate ? new Date(formData.eventDate) : null,
       eventLocation: formData.eventLocation,
       imageUrl: formData.imageUrl,
       stock: formData.stock,
