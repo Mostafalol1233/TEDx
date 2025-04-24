@@ -9,9 +9,15 @@ import { Link } from "wouter";
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
   
-  // Fetch products
+  // Fetch products with optimized settings
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    staleTime: 60000, // 1 minute
+    select: (data) => {
+      if (!data) return [];
+      // Pre-process the data to avoid doing it in the render
+      return data.filter(p => p.type === "ticket" && p.stock > 0);
+    },
   });
 
   // Filter products by type and category
