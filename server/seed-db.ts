@@ -53,7 +53,7 @@ async function seedDatabase() {
     const tedxTicket: InsertProduct = {
       name: "TEDx Youth Red Sea STEM Ticket",
       description: "Join us for an inspiring day of talks, workshops, and networking at TEDx Youth Red Sea STEM. Experience innovative ideas and breakthrough technologies.",
-      imageUrl: "https://i.imgur.com/CiKvA72.jpg",
+      imageUrl: "/images/tedx-ticket.svg",
       category: "Event",
       price: 1500,
       stock: 150,
@@ -69,7 +69,7 @@ async function seedDatabase() {
     const tedxShirt: InsertProduct = {
       name: "TEDx Youth Red Sea STEM T-Shirt",
       description: "Official TEDx Youth Red Sea STEM t-shirt. Made from 100% high-quality cotton with the event logo printed on the front.",
-      imageUrl: "https://i.imgur.com/8Nx43Pn.jpg",
+      imageUrl: "/images/tedx-tshirt.svg",
       category: "Merchandise",
       price: 800,
       stock: 100,
@@ -83,7 +83,7 @@ async function seedDatabase() {
     const tedxRedShirt: InsertProduct = {
       name: "TEDx Youth Limited Edition Red T-Shirt",
       description: "Limited edition red TEDx t-shirt with special design only available for event attendees.",
-      imageUrl: "https://i.imgur.com/6a6ZRXP.jpg",
+      imageUrl: "/images/tedx-event.svg",
       category: "Limited Edition",
       price: 1200,
       stock: 50,
