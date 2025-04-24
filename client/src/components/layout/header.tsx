@@ -1,10 +1,10 @@
-import { useState, memo } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Menu, X, TicketIcon } from "lucide-react";
+import { Menu, X, TicketIcon, User, LogOut, MessageSquare, CreditCard, Settings } from "lucide-react";
 
 export default function Header() {
   const [location] = useLocation();
@@ -66,26 +66,40 @@ export default function Header() {
                     <AvatarFallback>{user.name?.charAt(0) || user.username?.charAt(0)}</AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="w-full">الصفحة الشخصية</Link>
+                    <Link href="/dashboard" className="w-full flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>الصفحة الشخصية</span>
+                    </Link>
                   </DropdownMenuItem>
                   {user.isAdmin && (
                     <DropdownMenuItem asChild>
-                      <Link href="/admin" className="w-full">لوحة الإدارة</Link>
+                      <Link href="/admin" className="w-full flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>لوحة الإدارة</span>
+                      </Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem asChild>
-                    <Link href="/messages" className="w-full">الرسائل</Link>
+                    <Link href="/messages" className="w-full flex items-center">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      <span>الرسائل</span>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/points" className="w-full">تحويل النقاط</Link>
+                    <Link href="/points" className="w-full flex items-center">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      <span>تحويل النقاط</span>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => logoutMutation.mutate()}
                     disabled={logoutMutation.isPending}
+                    className="flex items-center text-red-500 hover:text-red-600 hover:bg-red-50"
                   >
-                    تسجيل الخروج
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>تسجيل الخروج</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
