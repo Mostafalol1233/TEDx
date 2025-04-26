@@ -39,6 +39,20 @@ export default function ProductCard({ product }: ProductCardProps) {
     }
   };
   
+  const tedxLogoVariants = {
+    hidden: { opacity: 0, scale: 0.7 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        delay: 0.3,
+        duration: 0.5,
+        type: "spring", 
+        stiffness: 200 
+      }
+    }
+  };
+  
   const badgeVariants = {
     hidden: { opacity: 0, x: -20 },
     visible: { 
@@ -71,6 +85,20 @@ export default function ProductCard({ product }: ProductCardProps) {
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-70"></div>
+          
+          {/* TEDx Logo for t-shirts */}
+          {isTEDx && !isTicket && (
+            <motion.div 
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+              variants={tedxLogoVariants}
+            >
+              <div className="bg-white/90 rounded-full p-3 shadow-lg">
+                <div className="bg-red-600 text-white font-bold text-xl px-3 py-1 rounded-lg">
+                  TEDx
+                </div>
+              </div>
+            </motion.div>
+          )}
           
           {isTEDx && (
             <motion.div 
