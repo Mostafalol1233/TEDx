@@ -55,6 +55,8 @@ export default function MessagesPage() {
     staleTime: 5000, // Consider data fresh for 5 seconds
   });
   
+  const queryClient = useQueryClient();
+
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (data: InsertMessage) => {

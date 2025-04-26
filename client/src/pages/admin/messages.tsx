@@ -32,6 +32,35 @@ export default function AdminMessagesPage() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Mark message as read mutation
+  const markAsReadMutation = useMutation({
+    mutationFn: async (messageId: number) => {
+      return await apiRequest("PATCH", `/api/messages/${messageId}/read`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+    },
+  });
+
+  // Send message mutation
+  const sendMessageMutation = useMutation({
+    mutationFn: async (message: InsertMessage) => {
+      return await apiRequest("POST", "/api/messages", message);
+    },
+    onSuccess: () => {
+      setNewMessage("");
+      refetchMessages();
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "خطأ في إرسال الرسالة",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Fetch users
   const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
@@ -55,15 +84,15 @@ export default function AdminMessagesPage() {
       // Handle new message notifications
       const removeMessageHandler = addMessageHandler('newMessage', (messageData) => {
         if (messageData.data && 
-            ((user?.id === messageData.data.userId && messageData.data.receiverId === selectedUserId) || 
-             (user?.id === messageData.data.receiverId && messageData.data.userId === selectedUserId))) {
+            ((user?.id === messageData.data.fromUserId && messageData.data.toUserId === selectedUserId) || 
+             (user?.id === messageData.data.toUserId && messageData.data.fromUserId === selectedUserId))) {
           // If the message is part of the current conversation, refresh messages
           queryClient.invalidateQueries({ queryKey: ["/api/admin/messages", selectedUserId] });
-        } else if (messageData.data && user?.id === messageData.data.receiverId) {
+        } else if (messageData.data && user?.id === messageData.data.toUserId) {
           // Notification for new message from other conversations
           toast({
             title: "رسالة جديدة",
-            description: `لديك رسالة جديدة من ${messageData.data.userName || "مستخدم"}`,
+            description: `لديك رسالة جديدة من مستخدم`,
           });
           // Refresh user list to update unread counts
           queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
@@ -87,7 +116,7 @@ export default function AdminMessagesPage() {
   useEffect(() => {
     if (selectedUserId && user) {
       const unreadMessages = messages.filter(m => 
-        m.userId === selectedUserId && m.receiverId === user.id && !m.read
+        m.fromUserId === selectedUserId && m.toUserId === user.id && !m.isRead
       );
       
       if (unreadMessages.length > 0) {
@@ -97,36 +126,7 @@ export default function AdminMessagesPage() {
         });
       }
     }
-  }, [messages, selectedUserId, user]);
-
-  // Send message mutation
-  const sendMessageMutation = useMutation({
-    mutationFn: async (message: InsertMessage) => {
-      return await apiRequest("POST", "/api/messages", message);
-    },
-    onSuccess: () => {
-      setNewMessage("");
-      refetchMessages();
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "خطأ في إرسال الرسالة",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Mark message as read mutation
-  const markAsReadMutation = useMutation({
-    mutationFn: async (messageId: number) => {
-      return await apiRequest("PATCH", `/api/messages/${messageId}/read`, {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
-    },
-  });
+  }, [messages, selectedUserId, user, markAsReadMutation]);
 
   // Handle sending a new message
   const handleSendMessage = (e: React.FormEvent) => {
@@ -134,10 +134,9 @@ export default function AdminMessagesPage() {
     if (!user || !selectedUserId || !newMessage.trim()) return;
 
     const messageData: InsertMessage = {
-      userId: user.id,
-      receiverId: selectedUserId,
-      content: newMessage.trim(),
-      read: false,
+      fromUserId: user.id,
+      toUserId: selectedUserId,
+      content: newMessage.trim()
     };
 
     sendMessageMutation.mutate(messageData);
@@ -150,7 +149,9 @@ export default function AdminMessagesPage() {
 
   // Get unread message count for a user
   const getUnreadCount = (userId: number) => {
-    return users.find(u => u.id === userId)?.unreadCount || 0;
+    // This is a placeholder - we'll need to implement unread count logic 
+    // based on the actual structure of your user or message objects
+    return 0;
   };
 
   return (
@@ -263,26 +264,28 @@ export default function AdminMessagesPage() {
                   ) : (
                     <div className="space-y-4">
                       {messages.map((message) => {
-                        const isAdmin = message.userId === user?.id;
+                        const isFromCurrentUser = message.fromUserId === user?.id;
                         return (
                           <motion.div
                             key={message.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}
+                            className={`flex ${isFromCurrentUser ? "justify-end" : "justify-start"}`}
                           >
                             <div 
                               className={`max-w-[70%] px-4 py-2 rounded-lg ${
-                                isAdmin 
+                                isFromCurrentUser 
                                   ? "bg-primary text-white rounded-br-none" 
                                   : "bg-white text-gray-800 rounded-bl-none shadow"
                               }`}
                             >
                               <p className="mb-1">{message.content}</p>
-                              <div className={`text-xs flex justify-end items-center ${isAdmin ? "text-primary-50" : "text-gray-400"}`}>
-                                <span>{format(new Date(message.createdAt), "p")}</span>
-                                {isAdmin && (
-                                  <CheckCheck className={`h-3 w-3 mr-1 ${message.read ? "text-green-400" : "text-primary-50"}`} />
+                              <div className={`text-xs flex justify-end items-center ${isFromCurrentUser ? "text-primary-50" : "text-gray-400"}`}>
+                                <span>
+                                  {message.createdAt ? format(new Date(message.createdAt), "p") : ""}
+                                </span>
+                                {isFromCurrentUser && (
+                                  <CheckCheck className={`h-3 w-3 mr-1 ${message.isRead ? "text-green-400" : "text-primary-50"}`} />
                                 )}
                               </div>
                             </div>
