@@ -31,6 +31,9 @@ export default function AdminMessagesPage() {
   const [newMessage, setNewMessage] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // For displaying unread message indicators
+  const [unreadCounts, setUnreadCounts] = useState<Record<number, number>>({});
 
   // Mark message as read mutation
   const markAsReadMutation = useMutation({
@@ -147,11 +150,27 @@ export default function AdminMessagesPage() {
     u.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Calculate unread counts when messages change
+  useEffect(() => {
+    if (user && messages.length > 0) {
+      // Calculate unread counts for the selected conversation
+      const counts: Record<number, number> = {};
+      
+      // Group messages by user and count unread ones
+      messages.forEach(message => {
+        if (message.toUserId === user.id && !message.isRead) {
+          const userId = message.fromUserId;
+          counts[userId] = (counts[userId] || 0) + 1;
+        }
+      });
+      
+      setUnreadCounts(counts);
+    }
+  }, [messages, user]);
+
   // Get unread message count for a user
   const getUnreadCount = (userId: number) => {
-    // This is a placeholder - we'll need to implement unread count logic 
-    // based on the actual structure of your user or message objects
-    return 0;
+    return unreadCounts[userId] || 0;
   };
 
   return (

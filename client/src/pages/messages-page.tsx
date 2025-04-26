@@ -98,14 +98,14 @@ export default function MessagesPage() {
   
   // Mark messages as read when conversation is opened
   useEffect(() => {
-    if (conversation && selectedUserId) {
+    if (conversation && selectedUserId && user) {
       conversation.forEach(message => {
-        if (message.toUserId === user?.id && !message.isRead) {
+        if (message.toUserId === user.id && !message.isRead) {
           markAsReadMutation.mutate(message.id);
         }
       });
     }
-  }, [conversation, selectedUserId, user?.id]);
+  }, [conversation, selectedUserId, user, markAsReadMutation, queryClient]);
   
   // Group messages by user
   const messagesByUser = messages?.reduce((acc, message) => {
