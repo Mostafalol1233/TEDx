@@ -65,6 +65,10 @@ export default function ProductCard({ product }: ProductCardProps) {
             alt={product.name} 
             className={`w-full ${isTicket ? 'h-52' : 'h-64'} object-cover`}
             variants={imageVariants}
+            onError={(e) => {
+              // Fallback for image loading errors
+              (e.target as HTMLImageElement).src = "https://via.placeholder.com/800x400";
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-70"></div>
           
