@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Product } from "@shared/schema";
 import ProductCard from "@/components/product-card";
 import CategoryFilter from "@/components/category-filter";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
+import { useWebSocketContext } from "@/hooks/use-websocket";
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");

@@ -14,6 +14,7 @@ import PointTransferPage from "@/pages/point-transfer-page";
 import AdminProductsPage from "@/pages/admin/products";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
+import { WebSocketProvider } from "./hooks/use-websocket";
 import Header from "./components/layout/header";
 import Footer from "./components/layout/footer";
 
@@ -73,7 +74,9 @@ function App() {
     <ThemeProvider attribute="class" defaultTheme="light">
       <TooltipProvider>
         <AuthProvider>
-          <AppRoutes />
+          <WebSocketProvider>
+            <AppRoutes />
+          </WebSocketProvider>
         </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>

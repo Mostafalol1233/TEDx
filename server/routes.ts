@@ -15,6 +15,7 @@ import {
   insertPointTransferSchema
 } from "@shared/schema";
 import { z } from "zod";
+import { WebSocketServer, WebSocket } from "ws";
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: any, res: any, next: any) => {
@@ -502,6 +503,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Setup WebSocket server on a different path to avoid conflicts with Vite's WebSocket
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Connected clients
+  const clients = new Map();
+  
+  wss.on('connection', (ws) => {
+    const clientId = Date.now();
+    clients.set(clientId, ws);
+    console.log(`WebSocket client connected: ${clientId}`);
+    
+    // Send initial data to client
+    sendToClient(ws, { type: 'connection', message: 'Connected to server', clientId });
+    
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log(`Received message from client ${clientId}:`, data);
+        
+        // Handle different message types
+        switch (data.type) {
+          case 'getProducts':
+            const products = await storage.getAllProducts();
+            sendToClient(ws, { type: 'products', data: products });
+            break;
+            
+          case 'getOrders':
+            if (data.userId) {
+              const orders = await storage.getUserOrders(data.userId);
+              sendToClient(ws, { type: 'orders', data: orders });
+            }
+            break;
+            
+          case 'getMessages':
+            if (data.userId) {
+              const messages = await storage.getUserMessages(data.userId);
+              sendToClient(ws, { type: 'messages', data: messages });
+            }
+            break;
+            
+          default:
+            sendToClient(ws, { type: 'error', message: 'Unknown message type' });
+        }
+      } catch (err) {
+        console.error('Error handling WebSocket message:', err);
+        sendToClient(ws, { type: 'error', message: 'Failed to process message' });
+      }
+    });
+    
+    ws.on('close', () => {
+      clients.delete(clientId);
+      console.log(`WebSocket client disconnected: ${clientId}`);
+    });
+  });
+  
+  // Helper function to send data to a client
+  function sendToClient(client, data) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(data));
+    }
+  }
+  
+  // Helper function to broadcast to all clients
+  function broadcast(data) {
+    clients.forEach((client) => {
+      sendToClient(client, data);
+    });
+  }
+  
+  // Update all clients when data changes
+  const originalCreateOrder = storage.createOrder;
+  storage.createOrder = async function(orderData) {
+    const order = await originalCreateOrder.call(storage, orderData);
+    broadcast({ type: 'orderCreated', data: order });
+    return order;
+  };
+  
+  const originalCreateMessage = storage.createMessage;
+  storage.createMessage = async function(messageData) {
+    const message = await originalCreateMessage.call(storage, messageData);
+    broadcast({ type: 'messageCreated', data: message });
+    return message;
+  };
+  
+  const originalCreateProduct = storage.createProduct;
+  storage.createProduct = async function(productData) {
+    const product = await originalCreateProduct.call(storage, productData);
+    broadcast({ type: 'productCreated', data: product });
+    return product;
+  };
 
   return httpServer;
 }
