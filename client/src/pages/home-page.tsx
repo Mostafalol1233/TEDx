@@ -6,9 +6,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useWebSocketContext } from "@/hooks/use-websocket";
+import { motion } from "framer-motion";
+import { Ticket, ShoppingBag, Users, MapPin, Calendar, Clock, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
+  const { addMessageHandler, sendMessage, status } = useWebSocketContext();
+  const queryClient = useQueryClient();
   
   // Fetch products with optimized settings
   const { data: products, isLoading } = useQuery<Product[]>({
@@ -17,9 +21,42 @@ export default function HomePage() {
     select: (data) => {
       if (!data) return [];
       // Pre-process the data to avoid doing it in the render
-      return data.filter(p => p.type === "ticket" && (p.stock ?? 0) > 0);
+      return data;
     },
   });
+
+  // Set up WebSocket handlers for real-time updates
+  useEffect(() => {
+    // Request products when WebSocket is connected
+    if (status === 'connected') {
+      sendMessage({ type: 'getProducts' });
+      
+      // Log connection status
+      console.log('WebSocket connected, requesting products data');
+    }
+    
+    // Handle product updates from WebSocket
+    const removeProductHandler = addMessageHandler('products', (message) => {
+      console.log('Received products update via WebSocket', message);
+      if (message.data) {
+        // Update the products in the cache
+        queryClient.setQueryData(['/api/products'], message.data);
+      }
+    });
+    
+    // Handle single product creation notifications
+    const removeProductCreatedHandler = addMessageHandler('productCreated', (message) => {
+      console.log('New product created:', message.data);
+      // Invalidate the products query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+    });
+    
+    // Clean up handlers when component unmounts
+    return () => {
+      removeProductHandler();
+      removeProductCreatedHandler();
+    };
+  }, [status, sendMessage, addMessageHandler, queryClient]);
 
   // Filter products by type and category
   const tickets = products?.filter(p => p.type === "ticket") || [];
@@ -99,41 +136,111 @@ export default function HomePage() {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 mt-8">
-            <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all">
-              <div className="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4 mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              </div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              whileHover={{ 
+                y: -10, 
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" 
+              }}
+              className="bg-white p-6 rounded-xl shadow-md transition-all"
+            >
+              <motion.div 
+                className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4 mx-auto"
+                whileHover={{ 
+                  scale: 1.1,
+                  rotate: 5,
+                  backgroundColor: "rgb(254, 226, 226)" // red-100 with a bit more saturation
+                }}
+              >
+                <motion.div 
+                  initial={{ rotate: 0 }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
+                >
+                  <Ticket className="h-8 w-8" />
+                </motion.div>
+              </motion.div>
               <h3 className="text-xl font-bold text-center mb-2">أفكار ملهمة</h3>
               <p className="text-gray-600 text-center">
                 استمع إلى أفكار جديدة ومحادثات ملهمة من متحدثين متميزين في مختلف المجالات.
               </p>
-            </div>
+            </motion.div>
             
-            <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all">
-              <div className="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4 mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              whileHover={{ 
+                y: -10, 
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" 
+              }}
+              className="bg-white p-6 rounded-xl shadow-md transition-all"
+            >
+              <motion.div 
+                className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4 mx-auto"
+                whileHover={{ 
+                  scale: 1.1,
+                  rotate: -5,
+                  backgroundColor: "rgb(254, 226, 226)" // red-100 with a bit more saturation
+                }}
+              >
+                <motion.div 
+                  animate={{ 
+                    y: [0, -5, 0],
+                    transition: { 
+                      duration: 2, 
+                      repeat: Infinity,
+                      repeatType: "loop"
+                    }
+                  }}
+                >
+                  <Users className="h-8 w-8" />
+                </motion.div>
+              </motion.div>
               <h3 className="text-xl font-bold text-center mb-2">تواصل وتعاون</h3>
               <p className="text-gray-600 text-center">
                 فرصة للتواصل مع مجتمع من المبدعين والمفكرين وبناء علاقات مع أشخاص ذوي اهتمامات مشتركة.
               </p>
-            </div>
+            </motion.div>
             
-            <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all">
-              <div className="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4 mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
-              </div>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              whileHover={{ 
+                y: -10, 
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" 
+              }}
+              className="bg-white p-6 rounded-xl shadow-md transition-all"
+            >
+              <motion.div 
+                className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4 mx-auto"
+                whileHover={{ 
+                  scale: 1.1,
+                  rotate: 5,
+                  backgroundColor: "rgb(254, 226, 226)" // red-100 with a bit more saturation
+                }}
+              >
+                <motion.div 
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    transition: { 
+                      duration: 2, 
+                      repeat: Infinity,
+                      repeatType: "loop"
+                    }
+                  }}
+                >
+                  <ShoppingBag className="h-8 w-8" />
+                </motion.div>
+              </motion.div>
               <h3 className="text-xl font-bold text-center mb-2">تجربة فريدة</h3>
               <p className="text-gray-600 text-center">
                 احصل على تجربة لا تنسى مع ورش عمل تفاعلية وأنشطة إبداعية ومنتجات حصرية.
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
