@@ -543,6 +543,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
               sendToClient(ws, { type: 'messages', data: messages });
             }
             break;
+          
+          case 'messageSent':
+            // When a message is sent, notify all connected clients
+            if (data.data) {
+              // Broadcast the message to all clients to ensure real-time updates
+              broadcast({ type: 'newMessage', data: data.data });
+            }
+            break;
+            
+          case 'getConversation':
+            if (data.userId && data.otherUserId) {
+              const conversation = await storage.getConversation(data.userId, data.otherUserId);
+              sendToClient(ws, { type: 'conversation', data: conversation });
+            }
+            break;
             
           default:
             sendToClient(ws, { type: 'error', message: 'Unknown message type' });

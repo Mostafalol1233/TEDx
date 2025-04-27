@@ -11,6 +11,7 @@ import EventsPage from "@/pages/events-page";
 import TshirtsPage from "@/pages/tshirts-page";
 import MessagesPage from "@/pages/messages-page";
 import PointTransferPage from "@/pages/point-transfer-page";
+import ProfilePage from "@/pages/profile-page";
 import AdminProductsPage from "@/pages/admin/products";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "./hooks/use-auth";
@@ -34,6 +35,7 @@ function AppRoutes() {
             {params => <ProductDetail id={parseInt(params.id)} />}
           </Route>
           <ProtectedRoute path="/dashboard" component={UserDashboard} />
+          <ProtectedRoute path="/profile" component={ProfilePage} />
           <ProtectedRoute path="/messages" component={MessagesPage} />
           <ProtectedRoute path="/points" component={PointTransferPage} />
           <ProtectedRoute 
