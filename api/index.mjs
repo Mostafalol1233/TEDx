@@ -1,15 +1,24 @@
-const express = require('express');
-const { createServer } = require('http');
-const { WebSocketServer } = require('ws');
-const { Pool } = require('@neondatabase/serverless');
-const { drizzle } = require('drizzle-orm/postgres-js');
-const session = require('express-session');
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const crypto = require('crypto');
-const path = require('path');
-const { eq } = require('drizzle-orm');
-const schema = require('./schema');
+// تعريف استيرادات المكتبات
+import express from 'express';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
+import { Pool } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import session from 'express-session';
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
+import crypto from 'crypto';
+import path from 'path';
+import { eq } from 'drizzle-orm';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// استيراد سكيما قاعدة البيانات
+import * as schema from './schema.mjs';
+
+// الحصول على مسار المجلد الحالي
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // إعداد Express
 const app = express();
@@ -18,7 +27,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // إعداد قاعدة البيانات
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle(pool, { schema });
+const db = drizzle(pool);
 
 // إعداد الجلسات
 const sessionMiddleware = session({
@@ -199,11 +208,22 @@ wss.on('connection', (ws) => {
   });
 });
 
-// في حالة الإستضافة على Vercel
-if (process.env.VERCEL) {
-  module.exports = app;
-} else {
-  // تشغيل الخادم محليًا
+// إنشاء دالة معالجة للطلبات (handler) لـ Vercel
+const handler = async (req, res) => {
+  // إذا كان طلب WebSocket، قم بمعالجته بشكل خاص
+  if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === 'websocket') {
+    return; // Vercel سيعالج ترقية البروتوكول تلقائيًا
+  }
+  
+  // معالجة الطلبات HTTP العادية
+  return app(req, res);
+};
+
+// تصدير معالج الطلبات للاستخدام مع Vercel
+export default handler;
+
+// في حالة عدم الاستضافة على Vercel، قم بتشغيل الخادم محليًا
+if (!process.env.VERCEL) {
   const port = process.env.PORT || 5000;
   server.listen(port, '0.0.0.0', () => {
     console.log(`Server running on port ${port}`);

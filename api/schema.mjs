@@ -1,6 +1,6 @@
-const { pgTable, serial, varchar, text, boolean, integer, real, timestamp, foreignKey } = require('drizzle-orm/pg-core');
+import { pgTable, serial, varchar, text, boolean, integer, timestamp } from 'drizzle-orm/pg-core';
 
-const users = pgTable("users", {
+export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: varchar("username", { length: 255 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(),
@@ -11,7 +11,7 @@ const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-const products = pgTable("products", {
+export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
@@ -22,7 +22,7 @@ const products = pgTable("products", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-const orders = pgTable("orders", {
+export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   status: varchar("status", { length: 50 }).default("pending").notNull(),
@@ -31,7 +31,7 @@ const orders = pgTable("orders", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-const orderItems = pgTable("order_items", {
+export const orderItems = pgTable("order_items", {
   id: serial("id").primaryKey(),
   orderId: integer("order_id").notNull().references(() => orders.id),
   productId: integer("product_id").notNull().references(() => products.id),
@@ -40,7 +40,7 @@ const orderItems = pgTable("order_items", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-const messages = pgTable("messages", {
+export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
   fromUserId: integer("from_user_id").notNull().references(() => users.id),
   toUserId: integer("to_user_id").notNull().references(() => users.id),
@@ -49,7 +49,7 @@ const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-const pointTransfers = pgTable("point_transfers", {
+export const pointTransfers = pgTable("point_transfers", {
   id: serial("id").primaryKey(),
   fromUserId: integer("from_user_id").notNull().references(() => users.id),
   toUserId: integer("to_user_id").notNull().references(() => users.id),
@@ -57,12 +57,3 @@ const pointTransfers = pgTable("point_transfers", {
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-
-module.exports = {
-  users,
-  products,
-  orders,
-  orderItems,
-  messages,
-  pointTransfers
-};

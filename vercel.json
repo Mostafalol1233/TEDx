@@ -1,15 +1,30 @@
 {
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
-    { "source": "/ws", "destination": "/api" }
-  ],
-  "headers": [
-    {
-      "source": "/ws",
-      "headers": [
-        { "key": "Upgrade", "value": "$http_upgrade" },
-        { "key": "Connection", "value": "upgrade" }
-      ]
+  "version": 2,
+  "functions": {
+    "api/index.mjs": {
+      "memory": 1024,
+      "maxDuration": 10
     }
-  ]
+  },
+  "builds": [
+    { "src": "api/index.mjs", "use": "@vercel/node" },
+    { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
+  ],
+  "routes": [
+    {
+      "src": "/ws",
+      "dest": "api/index.mjs",
+      "headers": {
+        "Upgrade": "$http_upgrade",
+        "Connection": "upgrade"
+      }
+    },
+    { "src": "/api/(.*)", "dest": "api/index.mjs" },
+    { "src": "/(.*)", "dest": "/dist/$1" },
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/dist/index.html" }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

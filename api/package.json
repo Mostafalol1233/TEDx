@@ -1,0 +1,16 @@
+{
+  "name": "tedx-store-api",
+  "version": "1.0.0",
+  "description": "API for TEDx Store",
+  "type": "module",
+  "main": "index.mjs",
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "drizzle-orm": "^0.39.1",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "ws": "^8.18.0"
+  }
+}
