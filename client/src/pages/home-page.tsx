@@ -9,6 +9,9 @@ import { useWebSocketContext } from "@/hooks/use-websocket";
 import { motion } from "framer-motion";
 import { Ticket, ShoppingBag, Users, MapPin, Calendar, Clock, ArrowRight } from "lucide-react";
 
+// Import the image directly
+import tshirtImage from "../assets/download.png";
+
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const { addMessageHandler, sendMessage, status } = useWebSocketContext();
@@ -112,13 +115,9 @@ export default function HomePage() {
             <div className="order-1 md:order-2">
               <div className="bg-white p-2 rounded-xl shadow-xl transform rotate-1 hover:rotate-0 transition-all duration-300">
                 <img 
-                  src="/images/download.png" 
+                  src={tshirtImage} 
                   alt="TEDx Youth Red Sea STEM" 
                   className="rounded-lg w-full object-cover h-72 md:h-auto" 
-                  onError={(e) => {
-                    // Fallback for image loading errors
-                    (e.target as HTMLImageElement).src = "https://i.imgur.com/6QJjYQ6.jpg";
-                  }}
                 />
                 <div className="absolute -bottom-3 -left-3 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg transform rotate-3 text-sm font-bold">
                   مستعد للمشاركة؟
