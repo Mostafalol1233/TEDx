@@ -2,39 +2,27 @@
   "version": 2,
   "builds": [
     {
-      "src": "server/index.ts",
-      "use": "@vercel/node"
-    },
-    {
       "src": "package.json",
-      "use": "@vercel/static-build",
+      "use": "@vercel/node",
       "config": {
-        "buildCommand": "vite build",
-        "outputDirectory": "dist"
+        "includeFiles": ["dist/**", "server/**", "shared/**"]
       }
     }
   ],
-  "routes": [
+  "buildCommand": "./build.sh",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/ws", "destination": "/server/index.ts" },
+    { "source": "/api/:path*", "destination": "/server/index.ts" },
+    { "source": "/(.*)", "destination": "/" }
+  ],
+  "headers": [
     {
-      "src": "/ws(.*)",
-      "dest": "server/index.ts",
-      "check": true
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "server/index.ts"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/dist/assets/$1"
-    },
-    {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|svg|ico|json))",
-      "dest": "/dist/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/index.html"
+      "source": "/ws",
+      "headers": [
+        { "key": "Upgrade", "value": "$http_upgrade" },
+        { "key": "Connection", "value": "upgrade" }
+      ]
     }
   ],
   "env": {
