@@ -16,13 +16,9 @@
   ],
   "routes": [
     {
-      "src": "/ws",
+      "src": "/ws(.*)",
       "dest": "server/index.ts",
-      "check": true,
-      "headers": {
-        "Upgrade": "websocket",
-        "Connection": "upgrade"
-      }
+      "check": true
     },
     {
       "src": "/api/(.*)",
@@ -30,15 +26,18 @@
     },
     {
       "src": "/assets/(.*)",
-      "dest": "dist/assets/$1"
+      "dest": "/dist/assets/$1"
     },
     {
       "src": "/(.*\\.(js|css|png|jpg|jpeg|svg|ico|json))",
-      "dest": "dist/$1"
+      "dest": "/dist/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "dist/index.html"
+      "dest": "/dist/index.html"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
