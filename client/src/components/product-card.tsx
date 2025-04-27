@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { CalendarIcon, MapPinIcon, ShoppingCart, Ticket, ShirtIcon, Clock, Star } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import LocalImage from "@/components/local-image";
 
 interface ProductCardProps {
   product: Product;
@@ -74,16 +75,17 @@ export default function ProductCard({ product }: ProductCardProps) {
     >
       <Card className="overflow-hidden group h-full flex flex-col shadow-md hover:shadow-xl transition-all duration-300">
         <div className="relative overflow-hidden">
-          <motion.img 
-            src={product.imageUrl || "https://via.placeholder.com/800x400"} 
-            alt={product.name} 
-            className={`w-full ${isTicket ? 'h-52' : 'h-64'} object-cover`}
+          <motion.div 
+            className={`w-full ${isTicket ? 'h-52' : 'h-64'} overflow-hidden`}
             variants={imageVariants}
-            onError={(e) => {
-              // Fallback for image loading errors
-              (e.target as HTMLImageElement).src = "https://via.placeholder.com/800x400";
-            }}
-          />
+          >
+            <LocalImage 
+              src={product.imageUrl || ""}
+              fallbackSrc="https://via.placeholder.com/800x400"
+              alt={product.name} 
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-70"></div>
           
           {/* TEDx Logo for t-shirts */}
