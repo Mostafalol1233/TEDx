@@ -8,9 +8,7 @@ import { Link } from "wouter";
 import { useWebSocketContext } from "@/hooks/use-websocket";
 import { motion } from "framer-motion";
 import { Ticket, ShoppingBag, Users, MapPin, Calendar, Clock, ArrowRight } from "lucide-react";
-
-// Import the image directly
-import tshirtImage from "../assets/download.png";
+import LocalImage from "@/components/local-image";
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -114,8 +112,9 @@ export default function HomePage() {
             </div>
             <div className="order-1 md:order-2">
               <div className="bg-white p-2 rounded-xl shadow-xl transform rotate-1 hover:rotate-0 transition-all duration-300">
-                <img 
-                  src={tshirtImage} 
+                <LocalImage 
+                  src="/images/download.png" 
+                  fallbackSrc="https://i.imgur.com/6QJjYQ6.jpg"
                   alt="TEDx Youth Red Sea STEM" 
                   className="rounded-lg w-full object-cover h-72 md:h-auto" 
                 />
