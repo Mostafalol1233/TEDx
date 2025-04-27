@@ -94,10 +94,13 @@ export default function ProductCard({ product }: ProductCardProps) {
               className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
               variants={tedxLogoVariants}
             >
-              <div className="bg-white/90 rounded-full p-3 shadow-lg">
-                <div className="bg-red-600 text-white font-bold text-xl px-3 py-1 rounded-lg">
-                  TEDx
-                </div>
+              <div className="bg-white/90 rounded-full p-2 shadow-lg">
+                <LocalImage 
+                  src="/images/tedx-logo.png"
+                  fallbackSrc="https://i.imgur.com/6QJjYQ6.jpg"
+                  alt="TEDx Logo"
+                  className="w-16 h-16 object-contain"
+                />
               </div>
             </motion.div>
           )}
