@@ -1,45 +1,15 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "server/index.ts",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/ws", "destination": "/api" }
   ],
-  "routes": [
+  "headers": [
     {
-      "src": "/ws",
-      "dest": "server/index.ts",
-      "headers": {
-        "Upgrade": "$http_upgrade",
-        "Connection": "upgrade"
-      }
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "server/index.ts"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "dist/assets/$1"
-    },
-    {
-      "src": "/(.*\\.js|.*\\.css|.*\\.png|.*\\.jpg|.*\\.ico|.*\\.svg|.*\\.json)",
-      "dest": "dist/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "dist/index.html"
+      "source": "/ws",
+      "headers": [
+        { "key": "Upgrade", "value": "$http_upgrade" },
+        { "key": "Connection", "value": "upgrade" }
+      ]
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
