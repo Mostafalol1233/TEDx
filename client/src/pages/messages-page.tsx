@@ -149,6 +149,44 @@ export default function MessagesPage() {
     return targetUser?.name || targetUser?.username || `مستخدم #${userId}`;
   };
   
+  // WebSocket integration for real-time messaging
+  const { addMessageHandler, sendMessage, status: wsStatus } = useWebSocketContext();
+  
+  // Set up WebSocket handlers for real-time message updates
+  useEffect(() => {
+    // When WebSocket is connected
+    if (wsStatus === 'connected' && user) {
+      // Register for new message notifications
+      const removeNewMessageHandler = addMessageHandler('newMessage', (message) => {
+        console.log('Received new message via WebSocket:', message);
+        if (message.data) {
+          // Immediately update the conversation if it matches current one
+          if (selectedUserId && 
+              ((message.data.fromUserId === selectedUserId && message.data.toUserId === user.id) ||
+               (message.data.fromUserId === user.id && message.data.toUserId === selectedUserId))) {
+            
+            // Update the conversation cache with new message
+            const currentConversation = queryClient.getQueryData<Message[]>(["/api/messages/conversation", selectedUserId]) || [];
+            queryClient.setQueryData(["/api/messages/conversation", selectedUserId], [...currentConversation, message.data]);
+            
+            // Mark as read if needed
+            if (message.data.toUserId === user.id && !message.data.isRead) {
+              markAsReadMutation.mutate(message.data.id);
+            }
+          }
+          
+          // Also update the messages list
+          queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+        }
+      });
+      
+      // Clean up on unmount
+      return () => {
+        removeNewMessageHandler();
+      };
+    }
+  }, [wsStatus, user, selectedUserId, addMessageHandler, queryClient]);
+
   // Send message handler
   const handleSendMessage = () => {
     if (!messageText.trim() || !user || !selectedUserId) return;
@@ -159,7 +197,21 @@ export default function MessagesPage() {
       content: messageText.trim()
     };
     
+    // Send via API
     sendMessageMutation.mutate(newMessage);
+    
+    // Also broadcast via WebSocket for real-time updating
+    if (wsStatus === 'connected') {
+      sendMessage({
+        type: 'messageSent',
+        data: {
+          ...newMessage,
+          id: Date.now(), // Temporary ID until saved in the database
+          createdAt: new Date().toISOString(),
+          isRead: false
+        }
+      });
+    }
   };
   
   // If user is not logged in

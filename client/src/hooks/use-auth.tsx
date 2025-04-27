@@ -42,12 +42,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
+      // Update user data in cache immediately
       queryClient.setQueryData(["/api/user"], user);
+      
+      // Force refetch to ensure all user data is fresh
+      queryClient.invalidateQueries({queryKey: ["/api/user"]});
+      
+      // Show success message
       toast({
-        title: "Login successful",
-        description: `Welcome back, ${user.name || user.username}!`,
+        title: "تم تسجيل الدخول بنجاح",
+        description: `أهلاً بعودتك، ${user.name || user.username}!`,
       });
-      setLocation("/");
+      
+      // Redirect to profile page or home
+      if (user.isAdmin) {
+        setLocation("/admin");
+      } else {
+        setLocation("/profile");
+      }
     },
     onError: (error: Error) => {
       toast({
