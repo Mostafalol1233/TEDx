@@ -559,6 +559,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
             break;
             
+          case 'ping':
+            // Reply with pong to keep the connection alive
+            sendToClient(ws, { type: 'pong', timestamp: Date.now() });
+            break;
+            
           default:
             sendToClient(ws, { type: 'error', message: 'Unknown message type' });
         }

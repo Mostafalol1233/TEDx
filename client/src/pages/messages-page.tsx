@@ -197,6 +197,21 @@ export default function MessagesPage() {
       content: messageText.trim()
     };
     
+    // For optimistic UI update, we'll create a temporary message object
+    const tempMessage = {
+      ...newMessage,
+      id: Date.now(), // Temporary ID until saved in the database
+      createdAt: new Date().toISOString(),
+      isRead: false
+    };
+    
+    // Optimistically update the conversation UI
+    const currentConversation = queryClient.getQueryData<Message[]>(["/api/messages/conversation", selectedUserId]) || [];
+    queryClient.setQueryData(["/api/messages/conversation", selectedUserId], [...currentConversation, tempMessage]);
+    
+    // Clear the input field immediately
+    setMessageText("");
+    
     // Send via API
     sendMessageMutation.mutate(newMessage);
     
@@ -204,12 +219,7 @@ export default function MessagesPage() {
     if (wsStatus === 'connected') {
       sendMessage({
         type: 'messageSent',
-        data: {
-          ...newMessage,
-          id: Date.now(), // Temporary ID until saved in the database
-          createdAt: new Date().toISOString(),
-          isRead: false
-        }
+        data: tempMessage
       });
     }
   };

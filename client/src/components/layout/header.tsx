@@ -130,9 +130,9 @@ export default function Header() {
                   </div>
                   
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="w-full flex items-center">
+                    <Link href="/profile" className="w-full flex items-center">
                       <User className="mr-2 h-4 w-4" />
-                      <span>الصفحة الشخصية</span>
+                      <span>الملف الشخصي</span>
                     </Link>
                   </DropdownMenuItem>
                   
@@ -220,12 +220,12 @@ export default function Header() {
                   </div>
                   
                   <Link 
-                    href="/dashboard" 
+                    href="/profile" 
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center text-gray-700 hover:text-red-600 transition-colors py-2"
                   >
                     <User className="mr-2 h-4 w-4" />
-                    <span>الصفحة الشخصية</span>
+                    <span>الملف الشخصي</span>
                   </Link>
                   
                   {user.isAdmin && (

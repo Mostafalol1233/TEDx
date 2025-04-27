@@ -99,9 +99,15 @@ export function useWebSocket() {
     if (webSocketRef.current?.readyState === WebSocket.OPEN) {
       webSocketRef.current.send(JSON.stringify(data));
       return true;
+    } else {
+      // If socket isn't open, try to reconnect
+      connect();
+      
+      // Add to a queue or return false to indicate the message wasn't sent
+      console.log('WebSocket not connected, message not sent');
+      return false;
     }
-    return false;
-  }, []);
+  }, [connect]);
   
   // Register a handler for a specific message type
   const addMessageHandler = useCallback((type: string, handler: MessageHandler) => {
@@ -123,10 +129,35 @@ export function useWebSocket() {
   useEffect(() => {
     connect();
     
+    // Add window focus/blur event listeners to improve connection reliability
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        if (webSocketRef.current?.readyState !== WebSocket.OPEN) {
+          console.log('Page visible again, reconnecting WebSocket...');
+          connect();
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Ping the server every 30 seconds to keep the connection alive
+    const pingInterval = window.setInterval(() => {
+      if (webSocketRef.current?.readyState === WebSocket.OPEN) {
+        try {
+          sendMessage({ type: 'ping' });
+        } catch (err) {
+          console.error('Error sending ping:', err);
+        }
+      }
+    }, 30000);
+    
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(pingInterval);
       disconnect();
     };
-  }, [connect, disconnect]);
+  }, [connect, disconnect, sendMessage]);
   
   return {
     status,
