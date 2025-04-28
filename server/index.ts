@@ -36,7 +36,8 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
+// تعريف وإعداد الخادم بشكل منفصل لاستخدامه في Vercel
+async function setupServer() {
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -44,27 +45,37 @@ app.use((req, res, next) => {
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    console.error(err);
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // إعداد Vite في بيئة التطوير فقط، وبعد إعداد جميع المسارات الأخرى
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
+  
+  return { app, server };
+}
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+// تشغيل الخادم دائماً ما لم يكن في بيئة Vercel
+const isVercel = process.env.VERCEL === "1";
+
+(async () => {
+  const { server } = await setupServer();
+  
+  if (!isVercel) {
+    // تشغيل الخادم على المنفذ 5000
+    const port = process.env.PORT || 5000;
+    server.listen({
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      log(`serving on port ${port}`);
+    });
+  }
 })();
+
+// تصدير لاستخدامه في Serverless Functions
+export { app };

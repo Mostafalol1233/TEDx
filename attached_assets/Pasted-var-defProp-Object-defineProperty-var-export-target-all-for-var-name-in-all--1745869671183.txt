@@ -1,0 +1,1069 @@
+var __defProp = Object.defineProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
+// server/index.ts
+import express2 from "express";
+
+// server/routes.ts
+import { createServer } from "http";
+
+// server/storage.ts
+import createMemoryStore from "memorystore";
+import session2 from "express-session";
+
+// shared/schema.ts
+var schema_exports = {};
+__export(schema_exports, {
+  insertMessageSchema: () => insertMessageSchema,
+  insertOrderItemSchema: () => insertOrderItemSchema,
+  insertOrderSchema: () => insertOrderSchema,
+  insertPointTransferSchema: () => insertPointTransferSchema,
+  insertProductSchema: () => insertProductSchema,
+  insertUserSchema: () => insertUserSchema,
+  messages: () => messages,
+  messagesRelations: () => messagesRelations,
+  orderItems: () => orderItems,
+  orderItemsRelations: () => orderItemsRelations,
+  orders: () => orders,
+  ordersRelations: () => ordersRelations,
+  pointTransfers: () => pointTransfers,
+  pointTransfersRelations: () => pointTransfersRelations,
+  products: () => products,
+  productsRelations: () => productsRelations,
+  users: () => users,
+  usersRelations: () => usersRelations
+});
+import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
+var users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  name: text("name"),
+  email: text("email"),
+  points: integer("points").default(0).notNull(),
+  isAdmin: boolean("is_admin").default(false).notNull()
+});
+var insertUserSchema = createInsertSchema(users).pick({
+  username: true,
+  password: true,
+  name: true,
+  email: true
+});
+var products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  category: text("category").notNull(),
+  price: integer("price").notNull(),
+  stock: integer("stock").default(0),
+  unlimited: boolean("unlimited").default(false),
+  type: text("type").notNull(),
+  // "ticket" or "tshirt"
+  createdAt: timestamp("created_at").defaultNow(),
+  eventDate: timestamp("event_date"),
+  // Only for tickets
+  eventLocation: text("event_location"),
+  // Only for tickets
+  sizes: text("sizes")
+  // Only for t-shirts, stored as comma-separated values
+});
+var insertProductSchema = createInsertSchema(products).pick({
+  name: true,
+  description: true,
+  imageUrl: true,
+  category: true,
+  price: true,
+  stock: true,
+  unlimited: true,
+  type: true,
+  eventDate: true,
+  eventLocation: true,
+  sizes: true
+});
+var orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  totalPoints: integer("total_points").notNull(),
+  status: text("status").notNull().default("pending"),
+  // pending, shipped, delivered, cancelled
+  createdAt: timestamp("created_at").defaultNow()
+});
+var insertOrderSchema = createInsertSchema(orders).pick({
+  userId: true,
+  totalPoints: true,
+  status: true
+});
+var orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull(),
+  productId: integer("product_id").notNull(),
+  quantity: integer("quantity").notNull(),
+  size: text("size"),
+  // Only for t-shirts
+  pricePerItem: integer("price_per_item").notNull()
+});
+var insertOrderItemSchema = createInsertSchema(orderItems).pick({
+  orderId: true,
+  productId: true,
+  quantity: true,
+  size: true,
+  pricePerItem: true
+});
+var messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  fromUserId: integer("from_user_id").notNull(),
+  toUserId: integer("to_user_id").notNull(),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow()
+});
+var insertMessageSchema = createInsertSchema(messages).pick({
+  fromUserId: true,
+  toUserId: true,
+  content: true
+});
+var pointTransfers = pgTable("point_transfers", {
+  id: serial("id").primaryKey(),
+  fromUserId: integer("from_user_id").notNull(),
+  toUserId: integer("to_user_id").notNull(),
+  points: integer("points").notNull(),
+  reason: text("reason"),
+  createdAt: timestamp("created_at").defaultNow()
+});
+var insertPointTransferSchema = createInsertSchema(pointTransfers).pick({
+  fromUserId: true,
+  toUserId: true,
+  points: true,
+  reason: true
+});
+var usersRelations = relations(users, ({ many }) => ({
+  orders: many(orders),
+  sentMessages: many(messages, { relationName: "fromUser" }),
+  receivedMessages: many(messages, { relationName: "toUser" }),
+  sentPointTransfers: many(pointTransfers, { relationName: "fromUser" }),
+  receivedPointTransfers: many(pointTransfers, { relationName: "toUser" })
+}));
+var messagesRelations = relations(messages, ({ one }) => ({
+  fromUser: one(users, {
+    fields: [messages.fromUserId],
+    references: [users.id],
+    relationName: "fromUser"
+  }),
+  toUser: one(users, {
+    fields: [messages.toUserId],
+    references: [users.id],
+    relationName: "toUser"
+  })
+}));
+var pointTransfersRelations = relations(pointTransfers, ({ one }) => ({
+  fromUser: one(users, {
+    fields: [pointTransfers.fromUserId],
+    references: [users.id],
+    relationName: "fromUser"
+  }),
+  toUser: one(users, {
+    fields: [pointTransfers.toUserId],
+    references: [users.id],
+    relationName: "toUser"
+  })
+}));
+var productsRelations = relations(products, ({ many }) => ({
+  orderItems: many(orderItems)
+}));
+var ordersRelations = relations(orders, ({ one, many }) => ({
+  user: one(users, {
+    fields: [orders.userId],
+    references: [users.id]
+  }),
+  orderItems: many(orderItems)
+}));
+var orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id]
+  }),
+  product: one(products, {
+    fields: [orderItems.productId],
+    references: [products.id]
+  })
+}));
+
+// server/db.ts
+import { Pool, neonConfig } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-serverless";
+import ws from "ws";
+neonConfig.webSocketConstructor = ws;
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?"
+  );
+}
+var pool = new Pool({ connectionString: process.env.DATABASE_URL });
+var db = drizzle(pool, { schema: schema_exports });
+
+// server/storage-db.ts
+import { eq, or, and, desc } from "drizzle-orm";
+import connectPg from "connect-pg-simple";
+import session from "express-session";
+var PostgresSessionStore = connectPg(session);
+var DatabaseStorage = class {
+  sessionStore;
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true
+    });
+  }
+  // User operations
+  async getUser(id) {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+  async getUserByUsername(username) {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+  async createUser(insertUser) {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+  async getAllUsers() {
+    return db.select().from(users);
+  }
+  async updateUserPoints(id, points) {
+    await db.update(users).set({ points }).where(eq(users.id, id));
+  }
+  async updateUserAdmin(id, isAdmin2) {
+    await db.update(users).set({ isAdmin: isAdmin2 }).where(eq(users.id, id));
+  }
+  // Product operations
+  async getProduct(id) {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product;
+  }
+  async getAllProducts() {
+    return db.select().from(products);
+  }
+  async createProduct(insertProduct) {
+    const [product] = await db.insert(products).values(insertProduct).returning();
+    return product;
+  }
+  async updateProduct(id, productData) {
+    const [product] = await db.update(products).set(productData).where(eq(products.id, id)).returning();
+    return product;
+  }
+  async deleteProduct(id) {
+    try {
+      await db.delete(products).where(eq(products.id, id));
+      return true;
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      return false;
+    }
+  }
+  async updateProductStock(id, stock) {
+    await db.update(products).set({ stock }).where(eq(products.id, id));
+  }
+  // Order operations
+  async getOrder(id) {
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order;
+  }
+  async getUserOrders(userId) {
+    return db.select().from(orders).where(eq(orders.userId, userId));
+  }
+  async getAllOrders() {
+    return db.select().from(orders);
+  }
+  async createOrder(insertOrder) {
+    const [order] = await db.insert(orders).values(insertOrder).returning();
+    return order;
+  }
+  async updateOrderStatus(id, status) {
+    await db.update(orders).set({ status }).where(eq(orders.id, id));
+  }
+  // Order item operations
+  async getOrderItem(id) {
+    const [orderItem] = await db.select().from(orderItems).where(eq(orderItems.id, id));
+    return orderItem;
+  }
+  async getOrderItems(orderId) {
+    return db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+  }
+  async createOrderItem(insertOrderItem) {
+    const [orderItem] = await db.insert(orderItems).values(insertOrderItem).returning();
+    return orderItem;
+  }
+  // Message operations
+  async getMessage(id) {
+    const [message] = await db.select().from(messages).where(eq(messages.id, id));
+    return message;
+  }
+  async getUserMessages(userId) {
+    return db.select().from(messages).where(
+      or(
+        eq(messages.fromUserId, userId),
+        eq(messages.toUserId, userId)
+      )
+    );
+  }
+  async getConversation(user1Id, user2Id) {
+    return db.select().from(messages).where(
+      or(
+        and(
+          eq(messages.fromUserId, user1Id),
+          eq(messages.toUserId, user2Id)
+        ),
+        and(
+          eq(messages.fromUserId, user2Id),
+          eq(messages.toUserId, user1Id)
+        )
+      )
+    ).orderBy(messages.createdAt);
+  }
+  async createMessage(insertMessage) {
+    const [message] = await db.insert(messages).values({
+      ...insertMessage,
+      isRead: false,
+      createdAt: /* @__PURE__ */ new Date()
+    }).returning();
+    return message;
+  }
+  async markMessageAsRead(id) {
+    await db.update(messages).set({ isRead: true }).where(eq(messages.id, id));
+  }
+  // Point transfer operations
+  async getPointTransfer(id) {
+    const [transfer] = await db.select().from(pointTransfers).where(eq(pointTransfers.id, id));
+    return transfer;
+  }
+  async getUserPointTransfers(userId) {
+    return db.select().from(pointTransfers).where(
+      or(
+        eq(pointTransfers.fromUserId, userId),
+        eq(pointTransfers.toUserId, userId)
+      )
+    ).orderBy(desc(pointTransfers.createdAt));
+  }
+  async createPointTransfer(insertPointTransfer) {
+    return await db.transaction(async (tx) => {
+      const [transfer] = await tx.insert(pointTransfers).values({
+        ...insertPointTransfer,
+        createdAt: /* @__PURE__ */ new Date()
+      }).returning();
+      const [fromUser] = await tx.select().from(users).where(eq(users.id, insertPointTransfer.fromUserId));
+      const [toUser] = await tx.select().from(users).where(eq(users.id, insertPointTransfer.toUserId));
+      if (!fromUser || !toUser) {
+        throw new Error("User not found");
+      }
+      if (!fromUser.isAdmin) {
+        await tx.update(users).set({ points: fromUser.points - insertPointTransfer.points }).where(eq(users.id, fromUser.id));
+      }
+      await tx.update(users).set({ points: toUser.points + insertPointTransfer.points }).where(eq(users.id, toUser.id));
+      return transfer;
+    });
+  }
+};
+
+// server/storage.ts
+var MemoryStore = createMemoryStore(session2);
+var storage = new DatabaseStorage();
+
+// server/auth.ts
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import session3 from "express-session";
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
+var scryptAsync = promisify(scrypt);
+async function hashPassword(password) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = await scryptAsync(password, salt, 64);
+  return `${buf.toString("hex")}.${salt}`;
+}
+async function comparePasswords(supplied, stored) {
+  const [hashed, salt] = stored.split(".");
+  const hashedBuf = Buffer.from(hashed, "hex");
+  const suppliedBuf = await scryptAsync(supplied, salt, 64);
+  return timingSafeEqual(hashedBuf, suppliedBuf);
+}
+function setupAuth(app2) {
+  const sessionSettings = {
+    secret: process.env.SESSION_SECRET || "tedx-youth-red-sea-stem-secret",
+    resave: false,
+    saveUninitialized: false,
+    store: storage.sessionStore,
+    cookie: {
+      maxAge: 1e3 * 60 * 60 * 24,
+      // 1 day
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production"
+    }
+  };
+  app2.set("trust proxy", 1);
+  app2.use(session3(sessionSettings));
+  app2.use(passport.initialize());
+  app2.use(passport.session());
+  passport.use(
+    new LocalStrategy(async (username, password, done) => {
+      try {
+        const user = await storage.getUserByUsername(username);
+        if (!user || !await comparePasswords(password, user.password)) {
+          return done(null, false);
+        } else {
+          return done(null, user);
+        }
+      } catch (err) {
+        return done(err);
+      }
+    })
+  );
+  passport.serializeUser((user, done) => done(null, user.id));
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await storage.getUser(id);
+      done(null, user);
+    } catch (err) {
+      done(err);
+    }
+  });
+  app2.post("/api/register", async (req, res, next) => {
+    try {
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      const user = await storage.createUser({
+        ...req.body,
+        password: await hashPassword(req.body.password)
+      });
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.status(201).json(user);
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+  app2.post("/api/login", passport.authenticate("local"), (req, res) => {
+    res.status(200).json(req.user);
+  });
+  app2.post("/api/logout", (req, res, next) => {
+    req.logout((err) => {
+      if (err) return next(err);
+      res.sendStatus(200);
+    });
+  });
+  app2.get("/api/user", (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    res.json(req.user);
+  });
+}
+
+// server/routes.ts
+import { z } from "zod";
+import { WebSocketServer, WebSocket } from "ws";
+var isAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ message: "Unauthorized" });
+};
+var isAdmin = (req, res, next) => {
+  if (req.isAuthenticated() && req.user.isAdmin) {
+    return next();
+  }
+  res.status(403).json({ message: "Forbidden" });
+};
+async function registerRoutes(app2) {
+  setupAuth(app2);
+  app2.get("/api/products", async (req, res) => {
+    try {
+      const products2 = await storage.getAllProducts();
+      res.json(products2);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      res.status(500).json({ message: "Failed to fetch products", error: err instanceof Error ? err.message : String(err) });
+    }
+  });
+  app2.get("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const product = await storage.getProduct(id);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      res.json(product);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch product" });
+    }
+  });
+  app2.get("/api/orders", isAuthenticated, async (req, res) => {
+    try {
+      const orders2 = await storage.getUserOrders(req.user.id);
+      res.json(orders2);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+  app2.get("/api/orders/:id/details", isAuthenticated, async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const order = await storage.getOrder(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      if (!req.user.isAdmin && order.userId !== req.user.id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      const orderItems2 = await storage.getOrderItems(orderId);
+      if (orderItems2.length === 0) {
+        return res.status(404).json({ message: "Order items not found" });
+      }
+      const product = await storage.getProduct(orderItems2[0].productId);
+      const user = await storage.getUser(order.userId);
+      res.json({
+        orderId: order.id,
+        username: user?.username || "Unknown",
+        userId: order.userId,
+        productName: product?.name || "Unknown product",
+        productId: orderItems2[0].productId,
+        quantity: orderItems2[0].quantity,
+        size: orderItems2[0].size,
+        totalPoints: order.totalPoints,
+        status: order.status,
+        createdAt: order.createdAt
+      });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch order details" });
+    }
+  });
+  app2.post("/api/orders", isAuthenticated, async (req, res) => {
+    try {
+      const parseResult = insertOrderSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: "Invalid order data" });
+      }
+      const orderData = parseResult.data;
+      if (orderData.userId !== req.user.id) {
+        return res.status(403).json({ message: "Cannot create order for another user" });
+      }
+      if (req.user.points < orderData.totalPoints) {
+        return res.status(400).json({ message: "Insufficient points" });
+      }
+      const order = await storage.createOrder(orderData);
+      await storage.updateUserPoints(req.user.id, req.user.points - orderData.totalPoints);
+      res.status(201).json(order);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to create order" });
+    }
+  });
+  app2.post("/api/order-items", isAuthenticated, async (req, res) => {
+    try {
+      const parseResult = insertOrderItemSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: "Invalid order item data" });
+      }
+      const orderItemData = parseResult.data;
+      const order = await storage.getOrder(orderItemData.orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      if (order.userId !== req.user.id) {
+        return res.status(403).json({ message: "Cannot add items to another user's order" });
+      }
+      const product = await storage.getProduct(orderItemData.productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      if (!product.unlimited && product.stock < orderItemData.quantity) {
+        return res.status(400).json({ message: "Product out of stock" });
+      }
+      const orderItem = await storage.createOrderItem(orderItemData);
+      if (!product.unlimited) {
+        await storage.updateProductStock(
+          product.id,
+          product.stock - orderItemData.quantity
+        );
+      }
+      res.status(201).json(orderItem);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to create order item" });
+    }
+  });
+  app2.get("/api/messages", isAuthenticated, async (req, res) => {
+    try {
+      const messages2 = await storage.getUserMessages(req.user.id);
+      res.json(messages2);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+  app2.get("/api/messages/conversation/:userId", isAuthenticated, async (req, res) => {
+    try {
+      const otherUserId = parseInt(req.params.userId);
+      const conversation = await storage.getConversation(req.user.id, otherUserId);
+      res.json(conversation);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch conversation" });
+    }
+  });
+  app2.post("/api/messages", isAuthenticated, async (req, res) => {
+    try {
+      const parseResult = insertMessageSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: "Invalid message data" });
+      }
+      const messageData = parseResult.data;
+      if (messageData.fromUserId !== req.user.id) {
+        return res.status(403).json({ message: "Cannot send message as another user" });
+      }
+      const recipient = await storage.getUser(messageData.toUserId);
+      if (!recipient) {
+        return res.status(404).json({ message: "Recipient not found" });
+      }
+      const message = await storage.createMessage(messageData);
+      res.status(201).json(message);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+  app2.patch("/api/messages/:id/read", isAuthenticated, async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      const message = await storage.getMessage(messageId);
+      if (!message) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+      if (message.toUserId !== req.user.id) {
+        return res.status(403).json({ message: "Cannot mark this message as read" });
+      }
+      await storage.markMessageAsRead(messageId);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to mark message as read" });
+    }
+  });
+  app2.get("/api/point-transfers", isAuthenticated, async (req, res) => {
+    try {
+      const transfers = await storage.getUserPointTransfers(req.user.id);
+      res.json(transfers);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch point transfers" });
+    }
+  });
+  app2.post("/api/point-transfers", isAuthenticated, async (req, res) => {
+    try {
+      const parseResult = insertPointTransferSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: "Invalid point transfer data" });
+      }
+      const transferData = parseResult.data;
+      if (transferData.fromUserId !== req.user.id) {
+        return res.status(403).json({ message: "Cannot send points as another user" });
+      }
+      const recipient = await storage.getUser(transferData.toUserId);
+      if (!recipient) {
+        return res.status(404).json({ message: "Recipient not found" });
+      }
+      if (!req.user.isAdmin && req.user.points < transferData.points) {
+        return res.status(400).json({ message: "Insufficient points" });
+      }
+      const transfer = await storage.createPointTransfer(transferData);
+      res.status(201).json(transfer);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to transfer points" });
+    }
+  });
+  app2.get("/api/users/admins", isAuthenticated, async (req, res) => {
+    try {
+      const users2 = await storage.getAllUsers();
+      const adminUsers = users2.filter((user) => user.isAdmin);
+      res.json(adminUsers);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch admin users" });
+    }
+  });
+  app2.get("/api/admin/users", isAdmin, async (req, res) => {
+    try {
+      const users2 = await storage.getAllUsers();
+      res.json(users2);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+  app2.get("/api/admin/orders", isAdmin, async (req, res) => {
+    try {
+      const orders2 = await storage.getAllOrders();
+      res.json(orders2);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+  app2.post("/api/admin/users/:id/add-points", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const pointsSchema = z.object({
+        points: z.number().min(1, "Points must be at least 1")
+      });
+      const parseResult = pointsSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: "Invalid points data" });
+      }
+      const { points } = parseResult.data;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      await storage.updateUserPoints(userId, user.points + points);
+      const updatedUser = await storage.getUser(userId);
+      res.json(updatedUser);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to add points" });
+    }
+  });
+  app2.patch("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const adminSchema = z.object({
+        isAdmin: z.boolean()
+      });
+      const parseResult = adminSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: "Invalid admin data" });
+      }
+      const { isAdmin: isAdmin2 } = parseResult.data;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      await storage.updateUserAdmin(userId, isAdmin2);
+      const updatedUser = await storage.getUser(userId);
+      res.json(updatedUser);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to update user admin status" });
+    }
+  });
+  app2.post("/api/admin/products", isAdmin, async (req, res) => {
+    try {
+      const parseResult = insertProductSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({
+          message: "Invalid product data",
+          errors: parseResult.error.errors
+        });
+      }
+      const productData = parseResult.data;
+      const product = await storage.createProduct(productData);
+      res.status(201).json(product);
+    } catch (err) {
+      console.error("Error creating product:", err);
+      res.status(500).json({
+        message: "Failed to create product",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  app2.patch("/api/admin/products/:id", isAdmin, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const existingProduct = await storage.getProduct(productId);
+      if (!existingProduct) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      const productUpdateSchema = z.object({
+        name: z.string().optional(),
+        description: z.string().nullable().optional(),
+        price: z.number().optional(),
+        category: z.string().optional(),
+        imageUrl: z.string().nullable().optional(),
+        stock: z.number().nullable().optional(),
+        unlimited: z.boolean().nullable().optional(),
+        eventDate: z.date().nullable().optional(),
+        eventLocation: z.string().nullable().optional(),
+        sizes: z.string().nullable().optional()
+      });
+      const parseResult = productUpdateSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({
+          message: "Invalid product update data",
+          errors: parseResult.error.errors
+        });
+      }
+      const updatedProduct = await storage.updateProduct(productId, parseResult.data);
+      if (!updatedProduct) {
+        return res.status(404).json({ message: "Failed to update product" });
+      }
+      res.json(updatedProduct);
+    } catch (err) {
+      console.error("Error updating product:", err);
+      res.status(500).json({
+        message: "Failed to update product",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  app2.delete("/api/admin/products/:id", isAdmin, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const success = await storage.deleteProduct(productId);
+      if (!success) {
+        return res.status(404).json({ message: "Product not found or could not be deleted" });
+      }
+      res.json({ success: true, message: "Product deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      res.status(500).json({
+        message: "Failed to delete product",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  const httpServer = createServer(app2);
+  const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
+  const clients = /* @__PURE__ */ new Map();
+  wss.on("connection", (ws2) => {
+    const clientId = Date.now();
+    clients.set(clientId, ws2);
+    console.log(`WebSocket client connected: ${clientId}`);
+    sendToClient(ws2, { type: "connection", message: "Connected to server", clientId });
+    ws2.on("message", async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log(`Received message from client ${clientId}:`, data);
+        switch (data.type) {
+          case "getProducts":
+            const products2 = await storage.getAllProducts();
+            sendToClient(ws2, { type: "products", data: products2 });
+            break;
+          case "getOrders":
+            if (data.userId) {
+              const orders2 = await storage.getUserOrders(data.userId);
+              sendToClient(ws2, { type: "orders", data: orders2 });
+            }
+            break;
+          case "getMessages":
+            if (data.userId) {
+              const messages2 = await storage.getUserMessages(data.userId);
+              sendToClient(ws2, { type: "messages", data: messages2 });
+            }
+            break;
+          case "messageSent":
+            if (data.data) {
+              broadcast({ type: "newMessage", data: data.data });
+            }
+            break;
+          case "getConversation":
+            if (data.userId && data.otherUserId) {
+              const conversation = await storage.getConversation(data.userId, data.otherUserId);
+              sendToClient(ws2, { type: "conversation", data: conversation });
+            }
+            break;
+          case "ping":
+            sendToClient(ws2, { type: "pong", timestamp: Date.now() });
+            break;
+          default:
+            sendToClient(ws2, { type: "error", message: "Unknown message type" });
+        }
+      } catch (err) {
+        console.error("Error handling WebSocket message:", err);
+        sendToClient(ws2, { type: "error", message: "Failed to process message" });
+      }
+    });
+    ws2.on("close", () => {
+      clients.delete(clientId);
+      console.log(`WebSocket client disconnected: ${clientId}`);
+    });
+  });
+  function sendToClient(client, data) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(data));
+    }
+  }
+  function broadcast(data) {
+    clients.forEach((client) => {
+      sendToClient(client, data);
+    });
+  }
+  const originalCreateOrder = storage.createOrder;
+  storage.createOrder = async function(orderData) {
+    const order = await originalCreateOrder.call(storage, orderData);
+    broadcast({ type: "orderCreated", data: order });
+    return order;
+  };
+  const originalCreateMessage = storage.createMessage;
+  storage.createMessage = async function(messageData) {
+    const message = await originalCreateMessage.call(storage, messageData);
+    broadcast({ type: "messageCreated", data: message });
+    return message;
+  };
+  const originalCreateProduct = storage.createProduct;
+  storage.createProduct = async function(productData) {
+    const product = await originalCreateProduct.call(storage, productData);
+    broadcast({ type: "productCreated", data: product });
+    return product;
+  };
+  return httpServer;
+}
+
+// server/vite.ts
+import express from "express";
+import fs from "fs";
+import path2 from "path";
+import { createServer as createViteServer, createLogger } from "vite";
+
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+var vite_config_default = defineConfig({
+  plugins: [
+    react(),
+    runtimeErrorOverlay(),
+    ...process.env.NODE_ENV !== "production" && process.env.REPL_ID !== void 0 ? [
+      await import("@replit/vite-plugin-cartographer").then(
+        (m) => m.cartographer()
+      )
+    ] : []
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "client", "src"),
+      "@shared": path.resolve(import.meta.dirname, "shared"),
+      "@assets": path.resolve(import.meta.dirname, "attached_assets")
+    }
+  },
+  root: path.resolve(import.meta.dirname, "client"),
+  build: {
+    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    emptyOutDir: true
+  }
+});
+
+// server/vite.ts
+import { nanoid } from "nanoid";
+var viteLogger = createLogger();
+function log(message, source = "express") {
+  const formattedTime = (/* @__PURE__ */ new Date()).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
+async function setupVite(app2, server) {
+  const serverOptions = {
+    middlewareMode: true,
+    hmr: { server },
+    allowedHosts: true
+  };
+  const vite = await createViteServer({
+    ...vite_config_default,
+    configFile: false,
+    customLogger: {
+      ...viteLogger,
+      error: (msg, options) => {
+        viteLogger.error(msg, options);
+        process.exit(1);
+      }
+    },
+    server: serverOptions,
+    appType: "custom"
+  });
+  app2.use(vite.middlewares);
+  app2.use("*", async (req, res, next) => {
+    const url = req.originalUrl;
+    try {
+      const clientTemplate = path2.resolve(
+        import.meta.dirname,
+        "..",
+        "client",
+        "index.html"
+      );
+      let template = await fs.promises.readFile(clientTemplate, "utf-8");
+      template = template.replace(
+        `src="/src/main.tsx"`,
+        `src="/src/main.tsx?v=${nanoid()}"`
+      );
+      const page = await vite.transformIndexHtml(url, template);
+      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+    } catch (e) {
+      vite.ssrFixStacktrace(e);
+      next(e);
+    }
+  });
+}
+function serveStatic(app2) {
+  const distPath = path2.resolve(import.meta.dirname, "public");
+  if (!fs.existsSync(distPath)) {
+    throw new Error(
+      `Could not find the build directory: ${distPath}, make sure to build the client first`
+    );
+  }
+  app2.use(express.static(distPath));
+  app2.use("*", (_req, res) => {
+    res.sendFile(path2.resolve(distPath, "index.html"));
+  });
+}
+
+// server/index.ts
+var app = express2();
+app.use(express2.json());
+app.use(express2.urlencoded({ extended: false }));
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path3 = req.path;
+  let capturedJsonResponse = void 0;
+  const originalResJson = res.json;
+  res.json = function(bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path3.startsWith("/api")) {
+      let logLine = `${req.method} ${path3} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "\u2026";
+      }
+      log(logLine);
+    }
+  });
+  next();
+});
+(async () => {
+  const server = await registerRoutes(app);
+  app.use((err, _req, res, _next) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(status).json({ message });
+    throw err;
+  });
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+  const port = 5e3;
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true
+  }, () => {
+    log(`serving on port ${port}`);
+  });
+})();
